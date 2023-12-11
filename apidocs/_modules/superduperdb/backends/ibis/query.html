@@ -8,7 +8,6 @@
         <title>superduperdb.backends.ibis.query - Python documentation</title>
       <link rel="stylesheet" type="text/css" href="../../../../_static/pygments.css?v=fa44fd50" />
     <link rel="stylesheet" type="text/css" href="../../../../_static/styles/furo.css?v=135e06be" />
-    <link rel="stylesheet" type="text/css" href="../../../../_static/copybutton.css?v=76b2166b" />
     <link rel="stylesheet" type="text/css" href="../../../../_static/styles/furo-extensions.css?v=36a5483c" />
     
     
@@ -162,8 +161,9 @@
 <li class="toctree-l2 has-children"><a class="reference internal" href="../../../../source/superduperdb.html">superduperdb package</a><input class="toctree-checkbox" id="toctree-checkbox-2" name="toctree-checkbox-2" role="switch" type="checkbox"/><label for="toctree-checkbox-2"><div class="visually-hidden">Toggle navigation of superduperdb package</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
 <li class="toctree-l3 has-children"><a class="reference internal" href="../../../../source/superduperdb.backends.html">superduperdb.backends package</a><input class="toctree-checkbox" id="toctree-checkbox-3" name="toctree-checkbox-3" role="switch" type="checkbox"/><label for="toctree-checkbox-3"><div class="visually-hidden">Toggle navigation of superduperdb.backends package</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
 <li class="toctree-l4"><a class="reference internal" href="../../../../source/superduperdb.backends.base.html">superduperdb.backends.base package</a></li>
-<li class="toctree-l4"><a class="reference internal" href="../../../../source/superduperdb.backends.filesystem.html">superduperdb.backends.filesystem package</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../../source/superduperdb.backends.dask.html">superduperdb.backends.dask package</a></li>
 <li class="toctree-l4"><a class="reference internal" href="../../../../source/superduperdb.backends.ibis.html">superduperdb.backends.ibis package</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../../source/superduperdb.backends.local.html">superduperdb.backends.local package</a></li>
 <li class="toctree-l4 has-children"><a class="reference internal" href="../../../../source/superduperdb.backends.mongodb.html">superduperdb.backends.mongodb package</a><input class="toctree-checkbox" id="toctree-checkbox-4" name="toctree-checkbox-4" role="switch" type="checkbox"/><label for="toctree-checkbox-4"><div class="visually-hidden">Toggle navigation of superduperdb.backends.mongodb package</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
 <li class="toctree-l5"><a class="reference internal" href="../../../../source/superduperdb.backends.mongodb.cdc.html">superduperdb.backends.mongodb.cdc package</a></li>
 </ul>
@@ -233,15 +233,11 @@
         </div>
         <article role="main">
           <h1>Source code for superduperdb.backends.ibis.query</h1><div class="highlight"><pre>
-<span></span><span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">TODO:</span>
-<span class="sd">- select_ids_of_missing_outputs</span>
-<span class="sd">&quot;&quot;&quot;</span>
-
-<span class="kn">import</span> <span class="nn">dataclasses</span> <span class="k">as</span> <span class="nn">dc</span>
+<span></span><span class="kn">import</span> <span class="nn">dataclasses</span> <span class="k">as</span> <span class="nn">dc</span>
 <span class="kn">import</span> <span class="nn">enum</span>
 <span class="kn">import</span> <span class="nn">json</span>
 <span class="kn">import</span> <span class="nn">re</span>
+<span class="kn">import</span> <span class="nn">types</span>
 <span class="kn">import</span> <span class="nn">typing</span> <span class="k">as</span> <span class="nn">t</span>
 
 <span class="kn">import</span> <span class="nn">ibis</span>
@@ -260,6 +256,7 @@
     <span class="n">_ReprMixin</span><span class="p">,</span>
 <span class="p">)</span>
 <span class="kn">from</span> <span class="nn">superduperdb.backends.ibis.cursor</span> <span class="kn">import</span> <span class="n">SuperDuperIbisResult</span>
+<span class="kn">from</span> <span class="nn">superduperdb.base.serializable</span> <span class="kn">import</span> <span class="n">Variable</span>
 <span class="kn">from</span> <span class="nn">superduperdb.components.component</span> <span class="kn">import</span> <span class="n">Component</span>
 <span class="kn">from</span> <span class="nn">superduperdb.components.encoder</span> <span class="kn">import</span> <span class="n">Encoder</span>
 <span class="kn">from</span> <span class="nn">superduperdb.components.schema</span> <span class="kn">import</span> <span class="n">Schema</span>
@@ -328,6 +325,10 @@
     <span class="k">def</span> <span class="nf">_get_query_linker</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">table_or_collection</span><span class="p">,</span> <span class="n">members</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="s1">&#39;IbisQueryLinker&#39;</span><span class="p">:</span>
         <span class="k">return</span> <span class="n">IbisQueryLinker</span><span class="p">(</span><span class="n">table_or_collection</span><span class="o">=</span><span class="n">table_or_collection</span><span class="p">,</span> <span class="n">members</span><span class="o">=</span><span class="n">members</span><span class="p">)</span>
 
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">output_fields</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">query_linker</span><span class="o">.</span><span class="n">output_fields</span>
+
     <span class="k">def</span> <span class="nf">_get_query_component</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
         <span class="n">name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
@@ -343,23 +344,22 @@
 
 <div class="viewcode-block" id="IbisCompoundSelect.outputs">
 <a class="viewcode-back" href="../../../../source/superduperdb.backends.ibis.html#superduperdb.backends.ibis.query.IbisCompoundSelect.outputs">[docs]</a>
-    <span class="k">def</span> <span class="nf">outputs</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">key</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">model</span><span class="p">:</span> <span class="nb">str</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">outputs</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        This method returns a query which joins a query with the outputs</span>
 <span class="sd">        for a table.</span>
 
+<span class="sd">        :param key: The key on which the model was evaluated</span>
 <span class="sd">        :param model: The model identifier for which to get the outputs</span>
+<span class="sd">        :param version: The version of the model for which to get the outputs (optional)</span>
 
-<span class="sd">        &gt;&gt;&gt; q = t.filter(t.age &gt; 25).outputs(&#39;model_name&#39;, db)</span>
-
-<span class="sd">        The above query will return the outputs of the `model_name` model</span>
-<span class="sd">        with t.filter() ids.</span>
+<span class="sd">        &gt;&gt;&gt; q = t.filter(t.age &gt; 25).outputs(&#39;txt&#39;, &#39;model_name&#39;)</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">assert</span> <span class="bp">self</span><span class="o">.</span><span class="n">query_linker</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span>
         <span class="k">return</span> <span class="n">IbisCompoundSelect</span><span class="p">(</span>
             <span class="n">table_or_collection</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">table_or_collection</span><span class="p">,</span>
             <span class="n">pre_like</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">pre_like</span><span class="p">,</span>
-            <span class="n">query_linker</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">query_linker</span><span class="o">.</span><span class="n">_outputs</span><span class="p">(</span><span class="n">key</span><span class="p">,</span> <span class="n">model</span><span class="p">,</span> <span class="nb">str</span><span class="p">(</span><span class="nb">hash</span><span class="p">(</span><span class="bp">self</span><span class="p">))),</span>
+            <span class="n">query_linker</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">query_linker</span><span class="o">.</span><span class="n">_outputs</span><span class="p">(</span><span class="n">query_id</span><span class="o">=</span><span class="nb">str</span><span class="p">(</span><span class="nb">hash</span><span class="p">(</span><span class="bp">self</span><span class="p">)),</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">),</span>
             <span class="n">post_like</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">post_like</span><span class="p">,</span>
         <span class="p">)</span></div>
 
@@ -401,8 +401,24 @@
         <span class="k">for</span> <span class="n">tab</span> <span class="ow">in</span> <span class="n">tables</span><span class="p">:</span>
             <span class="n">component_tables</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">db</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="s1">&#39;table&#39;</span><span class="p">,</span> <span class="n">tab</span><span class="p">))</span>
         <span class="n">fields</span> <span class="o">=</span> <span class="p">{}</span>
+
         <span class="k">for</span> <span class="n">tab</span> <span class="ow">in</span> <span class="n">component_tables</span><span class="p">:</span>
-            <span class="n">fields</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">tab</span><span class="o">.</span><span class="n">schema</span><span class="o">.</span><span class="n">fields</span><span class="p">)</span>
+            <span class="n">fields_copy</span> <span class="o">=</span> <span class="n">tab</span><span class="o">.</span><span class="n">schema</span><span class="o">.</span><span class="n">fields</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+            <span class="k">if</span> <span class="s1">&#39;_outputs&#39;</span> <span class="ow">in</span> <span class="n">tab</span><span class="o">.</span><span class="n">identifier</span> <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">renamings</span><span class="p">:</span>
+                <span class="n">model</span> <span class="o">=</span> <span class="n">tab</span><span class="o">.</span><span class="n">identifier</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s1">&#39;/&#39;</span><span class="p">)[</span><span class="mi">1</span><span class="p">]</span>
+                <span class="k">for</span> <span class="n">k</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">renamings</span><span class="o">.</span><span class="n">values</span><span class="p">():</span>
+                    <span class="k">if</span> <span class="p">(</span>
+                        <span class="n">re</span><span class="o">.</span><span class="n">match</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;^_outputs/</span><span class="si">{</span><span class="n">model</span><span class="si">}</span><span class="s1">/[0-9]+$&#39;</span><span class="p">,</span> <span class="n">tab</span><span class="o">.</span><span class="n">identifier</span><span class="p">)</span>
+                        <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span>
+                    <span class="p">):</span>
+                        <span class="n">fields_copy</span><span class="p">[</span><span class="n">k</span><span class="p">]</span> <span class="o">=</span> <span class="n">fields_copy</span><span class="p">[</span><span class="s1">&#39;output&#39;</span><span class="p">]</span>
+                        <span class="k">del</span> <span class="n">fields_copy</span><span class="p">[</span><span class="s1">&#39;output&#39;</span><span class="p">]</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="k">for</span> <span class="n">k</span> <span class="ow">in</span> <span class="n">fields_copy</span><span class="p">:</span>
+                    <span class="k">if</span> <span class="n">k</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">renamings</span><span class="o">.</span><span class="n">values</span><span class="p">():</span>
+                        <span class="n">fields_copy</span><span class="p">[</span><span class="n">k</span><span class="p">]</span> <span class="o">=</span> <span class="n">fields_copy</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">renamings</span><span class="p">[</span><span class="n">k</span><span class="p">]]</span>
+                        <span class="k">del</span> <span class="n">fields_copy</span><span class="p">[</span><span class="n">k</span><span class="p">]</span>
+            <span class="n">fields</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">fields_copy</span><span class="p">)</span>
         <span class="k">return</span> <span class="n">fields</span>
 
     <span class="nd">@property</span>
@@ -421,9 +437,7 @@
                 <span class="n">similar_ids</span>
             <span class="p">)</span>
         <span class="p">)</span>
-
         <span class="n">new_query_linker</span> <span class="o">=</span> <span class="n">query_linker_stub</span>
-
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">query_linker</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
             <span class="n">new_query_linker</span> <span class="o">=</span> <span class="n">IbisQueryLinker</span><span class="p">(</span>
                 <span class="n">table_or_collection</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">table_or_collection</span><span class="p">,</span>
@@ -453,31 +467,40 @@
 
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">query_linker</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="n">db</span><span class="p">),</span> <span class="kc">None</span>
 
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">renamings</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">query_linker</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">query_linker</span><span class="o">.</span><span class="n">renamings</span>
+        <span class="k">return</span> <span class="p">{}</span>
+
 <div class="viewcode-block" id="IbisCompoundSelect.execute">
 <a class="viewcode-back" href="../../../../source/superduperdb.backends.ibis.html#superduperdb.backends.ibis.query.IbisCompoundSelect.execute">[docs]</a>
     <span class="k">def</span> <span class="nf">execute</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">db</span><span class="p">):</span>
         <span class="n">output</span><span class="p">,</span> <span class="n">scores</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_execute</span><span class="p">(</span><span class="n">db</span><span class="p">)</span>
         <span class="n">fields</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_all_fields</span><span class="p">(</span><span class="n">db</span><span class="p">)</span>
+
         <span class="k">for</span> <span class="n">column</span> <span class="ow">in</span> <span class="n">output</span><span class="o">.</span><span class="n">columns</span><span class="p">:</span>
             <span class="k">try</span><span class="p">:</span>
                 <span class="nb">type</span> <span class="o">=</span> <span class="n">fields</span><span class="p">[</span><span class="n">column</span><span class="p">]</span>
             <span class="k">except</span> <span class="ne">KeyError</span><span class="p">:</span>
                 <span class="n">logging</span><span class="o">.</span><span class="n">warn</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;Disambiguation not yet supported of </span><span class="si">{</span><span class="n">column</span><span class="si">}</span><span class="s1">: TODO!&#39;</span><span class="p">)</span>
                 <span class="k">continue</span>
+
             <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="nb">type</span><span class="p">,</span> <span class="n">Encoder</span><span class="p">):</span>
                 <span class="n">output</span><span class="p">[</span><span class="n">column</span><span class="p">]</span> <span class="o">=</span> <span class="n">output</span><span class="p">[</span><span class="n">column</span><span class="p">]</span><span class="o">.</span><span class="n">map</span><span class="p">(</span><span class="nb">type</span><span class="o">.</span><span class="n">decode</span><span class="p">)</span>
+
         <span class="k">if</span> <span class="n">scores</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
             <span class="n">output</span><span class="p">[</span><span class="s1">&#39;scores&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">output</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">primary_id</span><span class="p">]</span><span class="o">.</span><span class="n">map</span><span class="p">(</span><span class="n">scores</span><span class="p">)</span>
 
         <span class="n">output</span> <span class="o">=</span> <span class="n">output</span><span class="o">.</span><span class="n">to_dict</span><span class="p">(</span><span class="n">orient</span><span class="o">=</span><span class="s1">&#39;records&#39;</span><span class="p">)</span>
         <span class="k">return</span> <span class="n">SuperDuperIbisResult</span><span class="p">(</span>
-            <span class="n">output</span><span class="p">,</span> <span class="n">id_field</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">table_or_collection</span><span class="o">.</span><span class="n">primary_id</span>
+            <span class="n">output</span><span class="p">,</span> <span class="n">id_field</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">table_or_collection</span><span class="o">.</span><span class="n">primary_id</span><span class="p">,</span> <span class="n">scores</span><span class="o">=</span><span class="n">scores</span>
         <span class="p">)</span></div>
 
 
 <div class="viewcode-block" id="IbisCompoundSelect.select_ids_of_missing_outputs">
 <a class="viewcode-back" href="../../../../source/superduperdb.backends.ibis.html#superduperdb.backends.ibis.query.IbisCompoundSelect.select_ids_of_missing_outputs">[docs]</a>
-    <span class="k">def</span> <span class="nf">select_ids_of_missing_outputs</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">key</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">model</span><span class="p">:</span> <span class="nb">str</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">select_ids_of_missing_outputs</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">key</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">model</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">version</span><span class="p">:</span> <span class="nb">int</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Query which selects ids where outputs are missing.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
@@ -493,6 +516,7 @@
                 <span class="n">key</span><span class="o">=</span><span class="n">key</span><span class="p">,</span>
                 <span class="n">model</span><span class="o">=</span><span class="n">model</span><span class="p">,</span>
                 <span class="n">query_id</span><span class="o">=</span><span class="n">query_id</span><span class="p">,</span>
+                <span class="n">version</span><span class="o">=</span><span class="n">version</span><span class="p">,</span>
             <span class="p">),</span>
         <span class="p">)</span>
         <span class="k">return</span> <span class="n">out</span></div>
@@ -506,6 +530,7 @@
         <span class="n">ids</span><span class="p">:</span> <span class="n">t</span><span class="o">.</span><span class="n">Sequence</span><span class="p">[</span><span class="n">t</span><span class="o">.</span><span class="n">Any</span><span class="p">],</span>
         <span class="n">key</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
         <span class="n">model</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+        <span class="n">version</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
         <span class="n">outputs</span><span class="p">:</span> <span class="n">t</span><span class="o">.</span><span class="n">Sequence</span><span class="p">[</span><span class="n">t</span><span class="o">.</span><span class="n">Any</span><span class="p">],</span>
         <span class="n">flatten</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
     <span class="p">):</span>
@@ -519,7 +544,6 @@
             <span class="k">return</span>
 
         <span class="n">query_id</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="nb">hash</span><span class="p">(</span><span class="bp">self</span><span class="p">))</span>
-        <span class="c1"># TODO generalize this to multiple queries per table/ model</span>
         <span class="n">table_records</span> <span class="o">=</span> <span class="p">[]</span>
         <span class="k">for</span> <span class="n">ix</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">outputs</span><span class="p">)):</span>
             <span class="n">d</span> <span class="o">=</span> <span class="p">{</span>
@@ -534,7 +558,24 @@
         <span class="k">for</span> <span class="n">r</span> <span class="ow">in</span> <span class="n">table_records</span><span class="p">:</span>
             <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">r</span><span class="p">[</span><span class="s1">&#39;output&#39;</span><span class="p">],</span> <span class="nb">dict</span><span class="p">)</span> <span class="ow">and</span> <span class="s1">&#39;_content&#39;</span> <span class="ow">in</span> <span class="n">r</span><span class="p">[</span><span class="s1">&#39;output&#39;</span><span class="p">]:</span>
                 <span class="n">r</span><span class="p">[</span><span class="s1">&#39;output&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">r</span><span class="p">[</span><span class="s1">&#39;output&#39;</span><span class="p">][</span><span class="s1">&#39;_content&#39;</span><span class="p">][</span><span class="s1">&#39;bytes&#39;</span><span class="p">]</span>
-        <span class="n">db</span><span class="o">.</span><span class="n">databackend</span><span class="o">.</span><span class="n">insert</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;_outputs/</span><span class="si">{</span><span class="n">model</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">,</span> <span class="n">table_records</span><span class="p">)</span></div>
+        <span class="n">db</span><span class="o">.</span><span class="n">databackend</span><span class="o">.</span><span class="n">insert</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;_outputs/</span><span class="si">{</span><span class="n">model</span><span class="si">}</span><span class="s1">/</span><span class="si">{</span><span class="n">version</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">,</span> <span class="n">table_records</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="IbisCompoundSelect.add_fold">
+<a class="viewcode-back" href="../../../../source/superduperdb.backends.ibis.html#superduperdb.backends.ibis.query.IbisCompoundSelect.add_fold">[docs]</a>
+    <span class="k">def</span> <span class="nf">add_fold</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">fold</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Select</span><span class="p">:</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">query_linker</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="c1"># make sure we have a fold column in the query</span>
+            <span class="n">query_members</span> <span class="o">=</span> <span class="p">[</span>
+                <span class="n">i</span>
+                <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">query_linker</span><span class="o">.</span><span class="n">members</span>
+                <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">i</span><span class="p">,</span> <span class="n">IbisQueryComponent</span><span class="p">)</span>
+            <span class="p">]</span>
+            <span class="k">if</span> <span class="n">query_members</span><span class="p">:</span>
+                <span class="n">last_member</span> <span class="o">=</span> <span class="n">query_members</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
+                <span class="k">if</span> <span class="s1">&#39;_fold&#39;</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">last_member</span><span class="o">.</span><span class="n">args</span><span class="p">:</span>
+                    <span class="n">last_member</span><span class="o">.</span><span class="n">args</span> <span class="o">=</span> <span class="nb">tuple</span><span class="p">(</span><span class="nb">list</span><span class="p">(</span><span class="n">last_member</span><span class="o">.</span><span class="n">args</span><span class="p">)</span> <span class="o">+</span> <span class="p">[</span><span class="s1">&#39;_fold&#39;</span><span class="p">])</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">filter</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_fold</span> <span class="o">==</span> <span class="n">fold</span><span class="p">)</span></div>
 </div>
 
 
@@ -583,6 +624,16 @@
 <a class="viewcode-back" href="../../../../source/superduperdb.backends.ibis.html#superduperdb.backends.ibis.query.IbisQueryLinker">[docs]</a>
 <span class="nd">@dc</span><span class="o">.</span><span class="n">dataclass</span><span class="p">(</span><span class="nb">repr</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
 <span class="k">class</span> <span class="nc">IbisQueryLinker</span><span class="p">(</span><span class="n">QueryLinker</span><span class="p">,</span> <span class="n">_LogicalExprMixin</span><span class="p">):</span>
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">renamings</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">out</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="k">for</span> <span class="n">m</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">members</span><span class="p">:</span>
+            <span class="n">out</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">m</span><span class="o">.</span><span class="n">renamings</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">out</span>
+
+    <span class="k">def</span> <span class="nf">__post_init__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_output_fields</span> <span class="o">=</span> <span class="p">{}</span>
+
 <div class="viewcode-block" id="IbisQueryLinker.repr_">
 <a class="viewcode-back" href="../../../../source/superduperdb.backends.ibis.html#superduperdb.backends.ibis.query.IbisQueryLinker.repr_">[docs]</a>
     <span class="k">def</span> <span class="nf">repr_</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
@@ -591,6 +642,14 @@
         <span class="n">out</span> <span class="o">=</span> <span class="n">re</span><span class="o">.</span><span class="n">sub</span><span class="p">(</span><span class="s1">&#39;\.\[&#39;</span><span class="p">,</span> <span class="s1">&#39;[&#39;</span><span class="p">,</span> <span class="n">out</span><span class="p">)</span>
         <span class="k">return</span> <span class="n">out</span></div>
 
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">output_fields</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_output_fields</span>
+
+    <span class="nd">@output_fields</span><span class="o">.</span><span class="n">setter</span>
+    <span class="k">def</span> <span class="nf">output_fields</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">value</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_output_fields</span> <span class="o">=</span> <span class="n">value</span>
 
     <span class="k">def</span> <span class="fm">__eq__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">other</span><span class="p">):</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">eq</span><span class="p">(</span><span class="n">other</span><span class="p">,</span> <span class="n">members</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">members</span><span class="p">,</span> <span class="n">collection</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">table_or_collection</span><span class="p">)</span>
@@ -621,6 +680,13 @@
             <span class="n">other</span><span class="p">,</span> <span class="n">members</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">members</span><span class="p">,</span> <span class="n">collection</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">table_or_collection</span>
         <span class="p">)</span>
 
+    <span class="nd">@classmethod</span>
+    <span class="k">def</span> <span class="nf">_get_query_linker</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">table_or_collection</span><span class="p">,</span> <span class="n">members</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">cls</span><span class="p">(</span>
+            <span class="n">table_or_collection</span><span class="o">=</span><span class="n">table_or_collection</span><span class="p">,</span>
+            <span class="n">members</span><span class="o">=</span><span class="n">members</span><span class="p">,</span>
+        <span class="p">)</span>
+
     <span class="k">def</span> <span class="nf">_get_query_component</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">k</span><span class="p">):</span>
         <span class="k">return</span> <span class="n">IbisQueryComponent</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="n">k</span><span class="p">,</span> <span class="nb">type</span><span class="o">=</span><span class="n">QueryType</span><span class="o">.</span><span class="n">ATTR</span><span class="p">)</span>
 
@@ -647,9 +713,11 @@
         <span class="p">)</span></div>
 
 
-    <span class="k">def</span> <span class="nf">_select_ids_of_missing_outputs</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">key</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">model</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">query_id</span><span class="p">:</span> <span class="nb">str</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">_select_ids_of_missing_outputs</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span> <span class="n">key</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">model</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">query_id</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">version</span><span class="p">:</span> <span class="nb">int</span>
+    <span class="p">):</span>
         <span class="n">output_table</span> <span class="o">=</span> <span class="n">IbisQueryTable</span><span class="p">(</span>
-            <span class="n">identifier</span><span class="o">=</span><span class="sa">f</span><span class="s1">&#39;_outputs/</span><span class="si">{</span><span class="n">model</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">,</span>
+            <span class="n">identifier</span><span class="o">=</span><span class="sa">f</span><span class="s1">&#39;_outputs/</span><span class="si">{</span><span class="n">model</span><span class="si">}</span><span class="s1">/</span><span class="si">{</span><span class="n">version</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">,</span>
             <span class="n">primary_id</span><span class="o">=</span><span class="s1">&#39;output_id&#39;</span><span class="p">,</span>
         <span class="p">)</span>
         <span class="n">filtered</span> <span class="o">=</span> <span class="n">output_table</span><span class="o">.</span><span class="n">filter</span><span class="p">(</span>
@@ -669,19 +737,44 @@
         <span class="k">return</span> <span class="nb">list</span><span class="p">(</span><span class="nb">set</span><span class="p">(</span><span class="n">out</span><span class="p">))</span></div>
 
 
-    <span class="k">def</span> <span class="nf">_outputs</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">key</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">model</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">query_id</span><span class="p">:</span> <span class="nb">str</span><span class="p">):</span>
-        <span class="n">symbol_table</span> <span class="o">=</span> <span class="n">IbisQueryTable</span><span class="p">(</span>
-            <span class="n">identifier</span><span class="o">=</span><span class="sa">f</span><span class="s1">&#39;_outputs/</span><span class="si">{</span><span class="n">model</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">,</span>
-            <span class="n">primary_id</span><span class="o">=</span><span class="s1">&#39;output_id&#39;</span><span class="p">,</span>
-        <span class="p">)</span>
-        <span class="n">attr</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span>  <span class="c1"># type: ignore[call-overload]</span>
-            <span class="bp">self</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">table_or_collection</span><span class="o">.</span><span class="n">primary_id</span>
-        <span class="p">)</span>
-        <span class="n">other_query</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">symbol_table</span><span class="p">,</span> <span class="n">symbol_table</span><span class="o">.</span><span class="n">input_id</span> <span class="o">==</span> <span class="n">attr</span><span class="p">)</span>
-        <span class="n">other_query</span><span class="o">.</span><span class="n">filter</span><span class="p">(</span>
-            <span class="n">symbol_table</span><span class="o">.</span><span class="n">key</span> <span class="o">==</span> <span class="n">key</span> <span class="ow">and</span> <span class="n">symbol_table</span><span class="o">.</span><span class="n">query_id</span> <span class="o">==</span> <span class="n">query_id</span>
-        <span class="p">)</span>
-        <span class="k">return</span> <span class="n">other_query</span>
+    <span class="k">def</span> <span class="nf">_outputs</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">query_id</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="k">for</span> <span class="n">key</span><span class="p">,</span> <span class="n">model</span> <span class="ow">in</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+            <span class="n">version</span> <span class="o">=</span> <span class="kc">None</span>
+            <span class="k">if</span> <span class="s1">&#39;/&#39;</span> <span class="ow">in</span> <span class="n">model</span><span class="p">:</span>
+                <span class="n">model</span><span class="p">,</span> <span class="n">version</span> <span class="o">=</span> <span class="n">model</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s1">&#39;/&#39;</span><span class="p">)</span>
+            <span class="n">symbol_table</span> <span class="o">=</span> <span class="n">IbisQueryTable</span><span class="p">(</span>
+                <span class="n">identifier</span><span class="o">=</span><span class="p">(</span>
+                    <span class="sa">f</span><span class="s1">&#39;_outputs/</span><span class="si">{</span><span class="n">model</span><span class="si">}</span><span class="s1">/</span><span class="si">{</span><span class="n">version</span><span class="si">}</span><span class="s1">&#39;</span>
+                    <span class="k">if</span> <span class="n">version</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span>
+                    <span class="k">else</span> <span class="n">Variable</span><span class="p">(</span>
+                        <span class="sa">f</span><span class="s1">&#39;_outputs/</span><span class="si">{</span><span class="n">model</span><span class="si">}</span><span class="s1">&#39;</span> <span class="o">+</span> <span class="s1">&#39;/</span><span class="si">{version}</span><span class="s1">&#39;</span><span class="p">,</span>
+                        <span class="k">lambda</span> <span class="n">db</span><span class="p">,</span> <span class="n">value</span><span class="p">:</span> <span class="n">value</span><span class="o">.</span><span class="n">format</span><span class="p">(</span>
+                            <span class="n">version</span><span class="o">=</span><span class="n">db</span><span class="o">.</span><span class="n">show</span><span class="p">(</span><span class="s1">&#39;model&#39;</span><span class="p">,</span> <span class="n">model</span><span class="p">)[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
+                        <span class="p">),</span>
+                    <span class="p">)</span>
+                <span class="p">),</span>
+                <span class="n">primary_id</span><span class="o">=</span><span class="s1">&#39;output_id&#39;</span><span class="p">,</span>
+            <span class="p">)</span>
+            <span class="n">symbol_table</span> <span class="o">=</span> <span class="n">symbol_table</span><span class="o">.</span><span class="n">relabel</span><span class="p">(</span>
+                <span class="p">{</span>
+                    <span class="s1">&#39;output&#39;</span><span class="p">:</span> <span class="p">(</span>
+                        <span class="sa">f</span><span class="s1">&#39;_outputs.</span><span class="si">{</span><span class="n">key</span><span class="si">}</span><span class="s1">.</span><span class="si">{</span><span class="n">model</span><span class="si">}</span><span class="s1">.</span><span class="si">{</span><span class="n">version</span><span class="si">}</span><span class="s1">&#39;</span>
+                        <span class="k">if</span> <span class="n">version</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span>
+                        <span class="k">else</span> <span class="n">Variable</span><span class="p">(</span>
+                            <span class="sa">f</span><span class="s1">&#39;_outputs.</span><span class="si">{</span><span class="n">key</span><span class="si">}</span><span class="s1">.</span><span class="si">{</span><span class="n">model</span><span class="si">}</span><span class="s1">&#39;</span> <span class="o">+</span> <span class="s1">&#39;.</span><span class="si">{version}</span><span class="s1">&#39;</span><span class="p">,</span>
+                            <span class="k">lambda</span> <span class="n">db</span><span class="p">,</span> <span class="n">value</span><span class="p">:</span> <span class="n">value</span><span class="o">.</span><span class="n">format</span><span class="p">(</span>
+                                <span class="n">version</span><span class="o">=</span><span class="n">db</span><span class="o">.</span><span class="n">show</span><span class="p">(</span><span class="s1">&#39;model&#39;</span><span class="p">,</span> <span class="n">model</span><span class="p">)[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
+                            <span class="p">),</span>
+                        <span class="p">)</span>
+                    <span class="p">)</span>
+                <span class="p">}</span>
+            <span class="p">)</span>
+            <span class="n">attr</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span>  <span class="c1"># type: ignore[call-overload]</span>
+                <span class="bp">self</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">table_or_collection</span><span class="o">.</span><span class="n">primary_id</span>
+            <span class="p">)</span>
+            <span class="n">other_query</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">symbol_table</span><span class="p">,</span> <span class="n">symbol_table</span><span class="o">.</span><span class="n">input_id</span> <span class="o">==</span> <span class="n">attr</span><span class="p">)</span>
+            <span class="n">other_query</span> <span class="o">=</span> <span class="n">other_query</span><span class="o">.</span><span class="n">filter</span><span class="p">(</span><span class="n">symbol_table</span><span class="o">.</span><span class="n">key</span> <span class="o">==</span> <span class="n">key</span><span class="p">)</span>
+            <span class="k">return</span> <span class="n">other_query</span>
 
 <div class="viewcode-block" id="IbisQueryLinker.compile">
 <a class="viewcode-back" href="../../../../source/superduperdb.backends.ibis.html#superduperdb.backends.ibis.query.IbisQueryLinker.compile">[docs]</a>
@@ -722,28 +815,25 @@
 
 <div class="viewcode-block" id="Table">
 <a class="viewcode-back" href="../../../../source/superduperdb.backends.ibis.html#superduperdb.backends.ibis.query.Table">[docs]</a>
-<span class="nd">@dc</span><span class="o">.</span><span class="n">dataclass</span><span class="p">(</span><span class="nb">repr</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+<span class="nd">@dc</span><span class="o">.</span><span class="n">dataclass</span><span class="p">(</span><span class="nb">repr</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">kw_only</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
 <span class="k">class</span> <span class="nc">Table</span><span class="p">(</span><span class="n">Component</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    This is a representation of an SQL table in ibis,</span>
 <span class="sd">    saving the important meta-data associated with the table</span>
 <span class="sd">    in the ``superduperdb`` meta-data store.</span>
-
-<span class="sd">    :param identifier: The name of the table</span>
-<span class="sd">    :param schema: The schema of the table</span>
+<span class="sd">    {component_params}:param schema: The schema of the table</span>
 <span class="sd">    :param primary_id: The primary id of the table</span>
-<span class="sd">    :param version: The version of the table</span>
 <span class="sd">    &quot;&quot;&quot;</span>
 
-    <span class="n">identifier</span><span class="p">:</span> <span class="nb">str</span>
+    <span class="n">type_id</span><span class="p">:</span> <span class="n">t</span><span class="o">.</span><span class="n">ClassVar</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="s1">&#39;table&#39;</span>
+    <span class="vm">__doc__</span> <span class="o">=</span> <span class="vm">__doc__</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">component_params</span><span class="o">=</span><span class="n">Component</span><span class="o">.</span><span class="vm">__doc__</span><span class="p">)</span>
+
     <span class="n">schema</span><span class="p">:</span> <span class="n">Schema</span>
     <span class="n">primary_id</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s1">&#39;id&#39;</span>
-    <span class="n">version</span><span class="p">:</span> <span class="n">t</span><span class="o">.</span><span class="n">Optional</span><span class="p">[</span><span class="nb">int</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>
-    <span class="n">type_id</span><span class="p">:</span> <span class="n">t</span><span class="o">.</span><span class="n">ClassVar</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="s1">&#39;table&#39;</span>
 
-<div class="viewcode-block" id="Table.on_create">
-<a class="viewcode-back" href="../../../../source/superduperdb.backends.ibis.html#superduperdb.backends.ibis.query.Table.on_create">[docs]</a>
-    <span class="k">def</span> <span class="nf">on_create</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">db</span><span class="p">:</span> <span class="s1">&#39;Datalayer&#39;</span><span class="p">):</span>
+<div class="viewcode-block" id="Table.pre_create">
+<a class="viewcode-back" href="../../../../source/superduperdb.backends.ibis.html#superduperdb.backends.ibis.query.Table.pre_create">[docs]</a>
+    <span class="k">def</span> <span class="nf">pre_create</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">db</span><span class="p">:</span> <span class="s1">&#39;Datalayer&#39;</span><span class="p">):</span>
         <span class="k">assert</span> <span class="bp">self</span><span class="o">.</span><span class="n">schema</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">,</span> <span class="s2">&quot;Schema must be set&quot;</span>
         <span class="k">for</span> <span class="n">e</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">schema</span><span class="o">.</span><span class="n">encoders</span><span class="p">:</span>
             <span class="n">db</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">e</span><span class="p">)</span>
@@ -792,10 +882,10 @@
 
 <div class="viewcode-block" id="Table.outputs">
 <a class="viewcode-back" href="../../../../source/superduperdb.backends.ibis.html#superduperdb.backends.ibis.query.Table.outputs">[docs]</a>
-    <span class="k">def</span> <span class="nf">outputs</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">outputs</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
         <span class="k">return</span> <span class="n">IbisQueryTable</span><span class="p">(</span>
             <span class="n">identifier</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">identifier</span><span class="p">,</span> <span class="n">primary_id</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">primary_id</span>
-        <span class="p">)</span><span class="o">.</span><span class="n">outputs</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span></div>
+        <span class="p">)</span><span class="o">.</span><span class="n">outputs</span><span class="p">(</span><span class="o">**</span><span class="n">kwargs</span><span class="p">)</span></div>
 
 
     <span class="k">def</span> <span class="fm">__getattr__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">item</span><span class="p">):</span>
@@ -833,9 +923,7 @@
 <span class="sd">    This is a symbolic representation of a table</span>
 <span class="sd">    for building ``IbisCompoundSelect`` queries.</span>
 
-<span class="sd">    :param identifier: The name of the table</span>
 <span class="sd">    :param primary_id: The primary id of the table</span>
-<span class="sd">    :param version: The version of the table</span>
 <span class="sd">    &quot;&quot;&quot;</span>
 
     <span class="n">primary_id</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s1">&#39;id&#39;</span>
@@ -864,10 +952,9 @@
 
 <div class="viewcode-block" id="IbisQueryTable.outputs">
 <a class="viewcode-back" href="../../../../source/superduperdb.backends.ibis.html#superduperdb.backends.ibis.query.IbisQueryTable.outputs">[docs]</a>
-    <span class="k">def</span> <span class="nf">outputs</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">key</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">model</span><span class="p">:</span> <span class="nb">str</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">outputs</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">        This method returns a query which joins a query with the outputs</span>
-<span class="sd">        for a table.</span>
+<span class="sd">        This method returns a query which joins a query with the model outputs.</span>
 
 <span class="sd">        :param model: The model identifier for which to get the outputs</span>
 
@@ -878,7 +965,7 @@
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">return</span> <span class="n">IbisCompoundSelect</span><span class="p">(</span>
             <span class="n">table_or_collection</span><span class="o">=</span><span class="bp">self</span><span class="p">,</span> <span class="n">query_linker</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_get_query_linker</span><span class="p">(</span><span class="n">members</span><span class="o">=</span><span class="p">[])</span>
-        <span class="p">)</span><span class="o">.</span><span class="n">outputs</span><span class="p">(</span><span class="n">key</span><span class="p">,</span> <span class="n">model</span><span class="p">)</span></div>
+        <span class="p">)</span><span class="o">.</span><span class="n">outputs</span><span class="p">(</span><span class="o">**</span><span class="n">kwargs</span><span class="p">)</span></div>
 
 
     <span class="nd">@property</span>
@@ -901,9 +988,11 @@
 
 <div class="viewcode-block" id="IbisQueryTable.select_ids_of_missing_outputs">
 <a class="viewcode-back" href="../../../../source/superduperdb.backends.ibis.html#superduperdb.backends.ibis.query.IbisQueryTable.select_ids_of_missing_outputs">[docs]</a>
-    <span class="k">def</span> <span class="nf">select_ids_of_missing_outputs</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">key</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">model</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Select</span><span class="p">:</span>
+    <span class="k">def</span> <span class="nf">select_ids_of_missing_outputs</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span> <span class="n">key</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">model</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">version</span><span class="p">:</span> <span class="nb">int</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Select</span><span class="p">:</span>
         <span class="n">output_table</span> <span class="o">=</span> <span class="n">IbisQueryTable</span><span class="p">(</span>
-            <span class="n">identifier</span><span class="o">=</span><span class="sa">f</span><span class="s1">&#39;_outputs/</span><span class="si">{</span><span class="n">model</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">,</span>
+            <span class="n">identifier</span><span class="o">=</span><span class="sa">f</span><span class="s1">&#39;_outputs/</span><span class="si">{</span><span class="n">model</span><span class="si">}</span><span class="s1">/</span><span class="si">{</span><span class="n">version</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">,</span>
             <span class="n">primary_id</span><span class="o">=</span><span class="s1">&#39;output_id&#39;</span><span class="p">,</span>
         <span class="p">)</span>
         <span class="n">query_id</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="nb">hash</span><span class="p">(</span><span class="bp">self</span><span class="p">))</span>
@@ -974,7 +1063,9 @@
 
 
 <span class="k">def</span> <span class="nf">_compile_item</span><span class="p">(</span><span class="n">item</span><span class="p">,</span> <span class="n">db</span><span class="p">,</span> <span class="n">tables</span><span class="p">):</span>
-    <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">item</span><span class="p">,</span> <span class="s1">&#39;compile&#39;</span><span class="p">):</span>
+    <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">item</span><span class="p">,</span> <span class="s1">&#39;compile&#39;</span><span class="p">)</span> <span class="ow">and</span> <span class="nb">isinstance</span><span class="p">(</span>
+        <span class="nb">getattr</span><span class="p">(</span><span class="n">item</span><span class="p">,</span> <span class="s1">&#39;compile&#39;</span><span class="p">),</span> <span class="n">types</span><span class="o">.</span><span class="n">MethodType</span>
+    <span class="p">):</span>
         <span class="k">return</span> <span class="n">item</span><span class="o">.</span><span class="n">compile</span><span class="p">(</span><span class="n">db</span><span class="p">,</span> <span class="n">tables</span><span class="o">=</span><span class="n">tables</span><span class="p">)</span>
     <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">item</span><span class="p">,</span> <span class="nb">list</span><span class="p">)</span> <span class="ow">or</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">item</span><span class="p">,</span> <span class="nb">tuple</span><span class="p">):</span>
         <span class="n">compiled</span> <span class="o">=</span> <span class="p">[]</span>
@@ -1013,6 +1104,28 @@
 <span class="sd">    &quot;&quot;&quot;</span>
 
     <span class="vm">__doc__</span> <span class="o">=</span> <span class="vm">__doc__</span> <span class="o">+</span> <span class="n">QueryComponent</span><span class="o">.</span><span class="vm">__doc__</span>  <span class="c1"># type: ignore[operator]</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">renamings</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">name</span> <span class="o">==</span> <span class="s1">&#39;rename&#39;</span><span class="p">:</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">args</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+        <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">name</span> <span class="o">==</span> <span class="s1">&#39;relabel&#39;</span><span class="p">:</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">args</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">out</span> <span class="o">=</span> <span class="p">{}</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">args</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="k">for</span> <span class="n">a</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">args</span><span class="p">:</span>
+                    <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span>
+                        <span class="n">a</span><span class="p">,</span> <span class="p">(</span><span class="n">IbisCompoundSelect</span><span class="p">,</span> <span class="n">IbisQueryLinker</span><span class="p">,</span> <span class="n">IbisQueryComponent</span><span class="p">)</span>
+                    <span class="p">):</span>
+                        <span class="n">out</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">a</span><span class="o">.</span><span class="n">renamings</span><span class="p">)</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">kwargs</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="k">for</span> <span class="n">v</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">kwargs</span><span class="o">.</span><span class="n">values</span><span class="p">():</span>
+                    <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span>
+                        <span class="n">v</span><span class="p">,</span> <span class="p">(</span><span class="n">IbisCompoundSelect</span><span class="p">,</span> <span class="n">IbisQueryLinker</span><span class="p">,</span> <span class="n">IbisQueryComponent</span><span class="p">)</span>
+                    <span class="p">):</span>
+                        <span class="n">out</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">v</span><span class="o">.</span><span class="n">renamings</span><span class="p">)</span>
+            <span class="k">return</span> <span class="n">out</span>
 
 <div class="viewcode-block" id="IbisQueryComponent.repr_">
 <a class="viewcode-back" href="../../../../source/superduperdb.backends.ibis.html#superduperdb.backends.ibis.query.IbisQueryComponent.repr_">[docs]</a>
@@ -1100,6 +1213,11 @@
         <span class="n">element</span> <span class="o">=</span> <span class="nb">next</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">iterable</span><span class="p">)</span>
         <span class="k">return</span> <span class="nb">dict</span><span class="p">(</span><span class="n">element</span><span class="p">)</span>
 
+    <span class="k">def</span> <span class="fm">__iter__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span>
+
+    <span class="fm">__next__</span> <span class="o">=</span> <span class="nb">next</span>
+
 
 <div class="viewcode-block" id="RawSQL">
 <a class="viewcode-back" href="../../../../source/superduperdb.backends.ibis.html#superduperdb.backends.ibis.query.RawSQL">[docs]</a>
@@ -1111,9 +1229,13 @@
 <div class="viewcode-block" id="RawSQL.execute">
 <a class="viewcode-back" href="../../../../source/superduperdb.backends.ibis.html#superduperdb.backends.ibis.query.RawSQL.execute">[docs]</a>
     <span class="k">def</span> <span class="nf">execute</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">db</span><span class="p">):</span>
-        <span class="n">cursor</span> <span class="o">=</span> <span class="n">db</span><span class="o">.</span><span class="n">databackend</span><span class="o">.</span><span class="n">conn</span><span class="o">.</span><span class="n">raw_sql</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">query</span><span class="p">)</span><span class="o">.</span><span class="n">mappings</span><span class="p">()</span><span class="o">.</span><span class="n">all</span><span class="p">()</span>
-        <span class="n">cursor</span> <span class="o">=</span> <span class="n">_SQLDictIterable</span><span class="p">(</span><span class="n">cursor</span><span class="p">)</span>
-        <span class="k">return</span> <span class="n">SuperDuperIbisResult</span><span class="p">(</span><span class="n">cursor</span><span class="p">,</span> <span class="n">id_field</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">id_field</span><span class="p">)</span></div>
+        <span class="n">cursor</span> <span class="o">=</span> <span class="n">db</span><span class="o">.</span><span class="n">databackend</span><span class="o">.</span><span class="n">conn</span><span class="o">.</span><span class="n">raw_sql</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">query</span><span class="p">)</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">cursor</span> <span class="o">=</span> <span class="n">cursor</span><span class="o">.</span><span class="n">mappings</span><span class="p">()</span><span class="o">.</span><span class="n">all</span><span class="p">()</span>
+            <span class="n">cursor</span> <span class="o">=</span> <span class="n">_SQLDictIterable</span><span class="p">(</span><span class="n">cursor</span><span class="p">)</span>
+            <span class="k">return</span> <span class="n">SuperDuperIbisResult</span><span class="p">(</span><span class="n">cursor</span><span class="p">,</span> <span class="n">id_field</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">id_field</span><span class="p">)</span>
+        <span class="k">except</span> <span class="ne">Exception</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">cursor</span></div>
 </div>
 
 </pre></div>
@@ -1152,10 +1274,5 @@
     <script src="../../../../_static/doctools.js?v=888ff710"></script>
     <script src="../../../../_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="../../../../_static/scripts/furo.js?v=32e29ea5"></script>
-    <script src="../../../../_static/clipboard.min.js?v=a7894cd8"></script>
-    <script src="../../../../_static/copybutton.js?v=f281be69"></script>
-    <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
-    <script src="https://unpkg.com/mermaid@10.2.0/dist/mermaid.min.js"></script>
-    <script>mermaid.initialize({startOnLoad:true});</script>
     </body>
 </html>

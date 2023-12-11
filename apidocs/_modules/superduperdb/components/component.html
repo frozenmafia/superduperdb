@@ -8,7 +8,6 @@
         <title>superduperdb.components.component - Python documentation</title>
       <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=fa44fd50" />
     <link rel="stylesheet" type="text/css" href="../../../_static/styles/furo.css?v=135e06be" />
-    <link rel="stylesheet" type="text/css" href="../../../_static/copybutton.css?v=76b2166b" />
     <link rel="stylesheet" type="text/css" href="../../../_static/styles/furo-extensions.css?v=36a5483c" />
     
     
@@ -162,8 +161,9 @@
 <li class="toctree-l2 has-children"><a class="reference internal" href="../../../source/superduperdb.html">superduperdb package</a><input class="toctree-checkbox" id="toctree-checkbox-2" name="toctree-checkbox-2" role="switch" type="checkbox"/><label for="toctree-checkbox-2"><div class="visually-hidden">Toggle navigation of superduperdb package</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
 <li class="toctree-l3 has-children"><a class="reference internal" href="../../../source/superduperdb.backends.html">superduperdb.backends package</a><input class="toctree-checkbox" id="toctree-checkbox-3" name="toctree-checkbox-3" role="switch" type="checkbox"/><label for="toctree-checkbox-3"><div class="visually-hidden">Toggle navigation of superduperdb.backends package</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
 <li class="toctree-l4"><a class="reference internal" href="../../../source/superduperdb.backends.base.html">superduperdb.backends.base package</a></li>
-<li class="toctree-l4"><a class="reference internal" href="../../../source/superduperdb.backends.filesystem.html">superduperdb.backends.filesystem package</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../source/superduperdb.backends.dask.html">superduperdb.backends.dask package</a></li>
 <li class="toctree-l4"><a class="reference internal" href="../../../source/superduperdb.backends.ibis.html">superduperdb.backends.ibis package</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../source/superduperdb.backends.local.html">superduperdb.backends.local package</a></li>
 <li class="toctree-l4 has-children"><a class="reference internal" href="../../../source/superduperdb.backends.mongodb.html">superduperdb.backends.mongodb package</a><input class="toctree-checkbox" id="toctree-checkbox-4" name="toctree-checkbox-4" role="switch" type="checkbox"/><label for="toctree-checkbox-4"><div class="visually-hidden">Toggle navigation of superduperdb.backends.mongodb package</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
 <li class="toctree-l5"><a class="reference internal" href="../../../source/superduperdb.backends.mongodb.cdc.html">superduperdb.backends.mongodb.cdc package</a></li>
 </ul>
@@ -240,6 +240,7 @@
 
 <span class="kn">from</span> <span class="nn">__future__</span> <span class="kn">import</span> <span class="n">annotations</span>
 
+<span class="kn">import</span> <span class="nn">dataclasses</span> <span class="k">as</span> <span class="nn">dc</span>
 <span class="kn">import</span> <span class="nn">typing</span> <span class="k">as</span> <span class="nn">t</span>
 
 <span class="kn">from</span> <span class="nn">superduperdb.backends.base.artifact</span> <span class="kn">import</span> <span class="n">ArtifactStore</span>
@@ -253,21 +254,34 @@
 
 <div class="viewcode-block" id="Component">
 <a class="viewcode-back" href="../../../source/superduperdb.components.html#superduperdb.components.component.Component">[docs]</a>
+<span class="nd">@dc</span><span class="o">.</span><span class="n">dataclass</span>
 <span class="k">class</span> <span class="nc">Component</span><span class="p">(</span><span class="n">Serializable</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">    Base component which model, listeners, learning tasks etc. inherit from.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    :param identifier: A unique identifier for the component&quot;&quot;&quot;</span>
 
     <span class="n">type_id</span><span class="p">:</span> <span class="n">t</span><span class="o">.</span><span class="n">ClassVar</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span>
+    <span class="n">identifier</span><span class="p">:</span> <span class="nb">str</span>
 
-    <span class="k">if</span> <span class="n">t</span><span class="o">.</span><span class="n">TYPE_CHECKING</span><span class="p">:</span>
-        <span class="n">identifier</span><span class="p">:</span> <span class="n">t</span><span class="o">.</span><span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span>
-        <span class="n">version</span><span class="p">:</span> <span class="n">t</span><span class="o">.</span><span class="n">Optional</span><span class="p">[</span><span class="nb">int</span><span class="p">]</span>
+    <span class="k">def</span> <span class="nf">__post_init__</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="c1"># set version in `__post_init__` so that is</span>
+        <span class="c1"># cannot be set in `__init__` and is always set</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">version</span><span class="p">:</span> <span class="n">t</span><span class="o">.</span><span class="n">Optional</span><span class="p">[</span><span class="nb">int</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>
 
-<div class="viewcode-block" id="Component.on_create">
-<a class="viewcode-back" href="../../../source/superduperdb.components.html#superduperdb.components.component.Component.on_create">[docs]</a>
-    <span class="k">def</span> <span class="nf">on_create</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">db</span><span class="p">:</span> <span class="n">Datalayer</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<div class="viewcode-block" id="Component.pre_create">
+<a class="viewcode-back" href="../../../source/superduperdb.components.html#superduperdb.components.component.Component.pre_create">[docs]</a>
+    <span class="k">def</span> <span class="nf">pre_create</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">db</span><span class="p">:</span> <span class="n">Datalayer</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Called the first time this component is created</span>
+
+<span class="sd">        :param db: the db that creates the component</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">assert</span> <span class="n">db</span></div>
+
+
+<div class="viewcode-block" id="Component.post_create">
+<a class="viewcode-back" href="../../../source/superduperdb.components.html#superduperdb.components.component.Component.post_create">[docs]</a>
+    <span class="k">def</span> <span class="nf">post_create</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">db</span><span class="p">:</span> <span class="n">Datalayer</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Called after the first time this component is created.</span>
+<span class="sd">        Generally used if ``self.version`` is important in this logic.</span>
 
 <span class="sd">        :param db: the db that creates the component</span>
 <span class="sd">        &quot;&quot;&quot;</span>
@@ -313,7 +327,6 @@
             <span class="n">method_name</span><span class="o">=</span><span class="s1">&#39;predict&#39;</span><span class="p">,</span>
             <span class="n">type_id</span><span class="o">=</span><span class="s1">&#39;model&#39;</span><span class="p">,</span>
             <span class="n">kwargs</span><span class="o">=</span><span class="p">{</span>
-                <span class="s1">&#39;distributed&#39;</span><span class="p">:</span> <span class="kc">False</span><span class="p">,</span>
                 <span class="s1">&#39;validation_set&#39;</span><span class="p">:</span> <span class="n">validation_set</span><span class="p">,</span>
                 <span class="s1">&#39;metrics&#39;</span><span class="p">:</span> <span class="n">metrics</span><span class="p">,</span>
             <span class="p">},</span>
@@ -324,16 +337,14 @@
 <a class="viewcode-back" href="../../../source/superduperdb.components.html#superduperdb.components.component.Component.schedule_jobs">[docs]</a>
     <span class="k">def</span> <span class="nf">schedule_jobs</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
-        <span class="n">database</span><span class="p">:</span> <span class="n">Datalayer</span><span class="p">,</span>
+        <span class="n">db</span><span class="p">:</span> <span class="n">Datalayer</span><span class="p">,</span>
         <span class="n">dependencies</span><span class="p">:</span> <span class="n">t</span><span class="o">.</span><span class="n">Sequence</span><span class="p">[</span><span class="n">Job</span><span class="p">]</span> <span class="o">=</span> <span class="p">(),</span>
-        <span class="n">distributed</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
         <span class="n">verbose</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">t</span><span class="o">.</span><span class="n">Sequence</span><span class="p">[</span><span class="n">t</span><span class="o">.</span><span class="n">Any</span><span class="p">]:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Run the job for this listener</span>
 
 <span class="sd">        :param database: The db to process</span>
 <span class="sd">        :param dependencies: A sequence of dependencies,</span>
-<span class="sd">        :param distributed: Is the computation distributed</span>
 <span class="sd">        :param verbose: If true, print more information</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">return</span> <span class="p">[]</span></div>
@@ -382,10 +393,5 @@
     <script src="../../../_static/doctools.js?v=888ff710"></script>
     <script src="../../../_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="../../../_static/scripts/furo.js?v=32e29ea5"></script>
-    <script src="../../../_static/clipboard.min.js?v=a7894cd8"></script>
-    <script src="../../../_static/copybutton.js?v=f281be69"></script>
-    <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
-    <script src="https://unpkg.com/mermaid@10.2.0/dist/mermaid.min.js"></script>
-    <script>mermaid.initialize({startOnLoad:true});</script>
     </body>
 </html>

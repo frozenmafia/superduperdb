@@ -12,6 +12,14 @@ Subpackages
 Submodules
 ----------
 
+superduperdb.misc.annotations module
+------------------------------------
+
+.. automodule:: superduperdb.misc.annotations
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
 superduperdb.misc.colors module
 -------------------------------
 
@@ -96,14 +104,6 @@ superduperdb.misc.special\_dicts module
 ---------------------------------------
 
 .. automodule:: superduperdb.misc.special_dicts
-   :members:
-   :undoc-members:
-   :show-inheritance:
-
-superduperdb.misc.superduper module
------------------------------------
-
-.. automodule:: superduperdb.misc.superduper
    :members:
    :undoc-members:
    :show-inheritance:

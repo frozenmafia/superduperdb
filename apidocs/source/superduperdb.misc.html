@@ -9,7 +9,6 @@
         <title>superduperdb.misc package - Python documentation</title>
       <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=fa44fd50" />
     <link rel="stylesheet" type="text/css" href="../_static/styles/furo.css?v=135e06be" />
-    <link rel="stylesheet" type="text/css" href="../_static/copybutton.css?v=76b2166b" />
     <link rel="stylesheet" type="text/css" href="../_static/styles/furo-extensions.css?v=36a5483c" />
     
     
@@ -163,8 +162,9 @@
 <li class="toctree-l2 current has-children"><a class="reference internal" href="superduperdb.html">superduperdb package</a><input checked="" class="toctree-checkbox" id="toctree-checkbox-2" name="toctree-checkbox-2" role="switch" type="checkbox"/><label for="toctree-checkbox-2"><div class="visually-hidden">Toggle navigation of superduperdb package</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul class="current">
 <li class="toctree-l3 has-children"><a class="reference internal" href="superduperdb.backends.html">superduperdb.backends package</a><input class="toctree-checkbox" id="toctree-checkbox-3" name="toctree-checkbox-3" role="switch" type="checkbox"/><label for="toctree-checkbox-3"><div class="visually-hidden">Toggle navigation of superduperdb.backends package</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
 <li class="toctree-l4"><a class="reference internal" href="superduperdb.backends.base.html">superduperdb.backends.base package</a></li>
-<li class="toctree-l4"><a class="reference internal" href="superduperdb.backends.filesystem.html">superduperdb.backends.filesystem package</a></li>
+<li class="toctree-l4"><a class="reference internal" href="superduperdb.backends.dask.html">superduperdb.backends.dask package</a></li>
 <li class="toctree-l4"><a class="reference internal" href="superduperdb.backends.ibis.html">superduperdb.backends.ibis package</a></li>
+<li class="toctree-l4"><a class="reference internal" href="superduperdb.backends.local.html">superduperdb.backends.local package</a></li>
 <li class="toctree-l4 has-children"><a class="reference internal" href="superduperdb.backends.mongodb.html">superduperdb.backends.mongodb package</a><input class="toctree-checkbox" id="toctree-checkbox-4" name="toctree-checkbox-4" role="switch" type="checkbox"/><label for="toctree-checkbox-4"><div class="visually-hidden">Toggle navigation of superduperdb.backends.mongodb package</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
 <li class="toctree-l5"><a class="reference internal" href="superduperdb.backends.mongodb.cdc.html">superduperdb.backends.mongodb.cdc package</a></li>
 </ul>
@@ -334,6 +334,28 @@
 </section>
 <section id="submodules">
 <h2>Submodules<a class="headerlink" href="#submodules" title="Link to this heading">#</a></h2>
+</section>
+<section id="module-superduperdb.misc.annotations">
+<span id="superduperdb-misc-annotations-module"></span><h2>superduperdb.misc.annotations module<a class="headerlink" href="#module-superduperdb.misc.annotations" title="Link to this heading">#</a></h2>
+<dl class="py exception">
+<dt class="sig sig-object py" id="superduperdb.misc.annotations.SuperDuperDBDeprecationWarning">
+<em class="property"><span class="pre">exception</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">superduperdb.misc.annotations.</span></span><span class="sig-name descname"><span class="pre">SuperDuperDBDeprecationWarning</span></span><a class="reference internal" href="../_modules/superduperdb/misc/annotations.html#SuperDuperDBDeprecationWarning"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#superduperdb.misc.annotations.SuperDuperDBDeprecationWarning" title="Link to this definition">#</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">DeprecationWarning</span></code></p>
+<p>Specialized Deprecation Warning for fine grained filtering control</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="superduperdb.misc.annotations.public_api">
+<span class="sig-prename descclassname"><span class="pre">superduperdb.misc.annotations.</span></span><span class="sig-name descname"><span class="pre">public_api</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">stability</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">'stable'</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/superduperdb/misc/annotations.html#public_api"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#superduperdb.misc.annotations.public_api" title="Link to this definition">#</a></dt>
+<dd><p>Annotation for documenting public APIs.</p>
+<p>If <code class="docutils literal notranslate"><span class="pre">stability=&quot;alpha&quot;</span></code>, the API can be used by advanced users who are
+tolerant to and expect breaking changes.</p>
+<p>If <code class="docutils literal notranslate"><span class="pre">stability=&quot;beta&quot;</span></code>, the API is still public and can be used by early
+users, but are subject to change.</p>
+<p>If <code class="docutils literal notranslate"><span class="pre">stability=&quot;stable&quot;</span></code>, the APIs will remain backwards compatible across
+minor releases.</p>
+</dd></dl>
+
 </section>
 <section id="module-superduperdb.misc.colors">
 <span id="superduperdb-misc-colors-module"></span><h2>superduperdb.misc.colors module<a class="headerlink" href="#module-superduperdb.misc.colors" title="Link to this heading">#</a></h2>
@@ -656,7 +678,7 @@ members of dataclasses and Pydantic model.</p>
 <span id="superduperdb-misc-retry-module"></span><h2>superduperdb.misc.retry module<a class="headerlink" href="#module-superduperdb.misc.retry" title="Link to this heading">#</a></h2>
 <dl class="py class">
 <dt class="sig sig-object py" id="superduperdb.misc.retry.Retry">
-<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">superduperdb.misc.retry.</span></span><span class="sig-name descname"><span class="pre">Retry</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">exception_types</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Type</span><span class="p"><span class="pre">[</span></span><span class="pre">BaseException</span><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">Tuple</span><span class="p"><span class="pre">[</span></span><span class="pre">Type</span><span class="p"><span class="pre">[</span></span><span class="pre">BaseException</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="p"><span class="pre">...</span></span><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">cfg</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="superduperdb.base.html#superduperdb.base.config.Retry" title="superduperdb.base.config.Retry"><span class="pre">Retry</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/superduperdb/misc/retry.html#Retry"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#superduperdb.misc.retry.Retry" title="Link to this definition">#</a></dt>
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">superduperdb.misc.retry.</span></span><span class="sig-name descname"><span class="pre">Retry</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">exception_types</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Type</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="superduperdb.base.html#superduperdb.base.exceptions.BaseException" title="superduperdb.base.exceptions.BaseException"><span class="pre">BaseException</span></a><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">Tuple</span><span class="p"><span class="pre">[</span></span><span class="pre">Type</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="superduperdb.base.html#superduperdb.base.exceptions.BaseException" title="superduperdb.base.exceptions.BaseException"><span class="pre">BaseException</span></a><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="p"><span class="pre">...</span></span><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">cfg</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="superduperdb.base.html#superduperdb.base.config.Retry" title="superduperdb.base.config.Retry"><span class="pre">Retry</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/superduperdb/misc/retry.html#Retry"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#superduperdb.misc.retry.Retry" title="Link to this definition">#</a></dt>
 <dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
 <p>Retry a function until it succeeds.</p>
 <p>This is a thin wrapper around the tenacity retry library, using our configs.
@@ -669,7 +691,7 @@ members of dataclasses and Pydantic model.</p>
 
 <dl class="py attribute">
 <dt class="sig sig-object py" id="superduperdb.misc.retry.Retry.exception_types">
-<span class="sig-name descname"><span class="pre">exception_types</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">Type</span><span class="p"><span class="pre">[</span></span><span class="pre">BaseException</span><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">Tuple</span><span class="p"><span class="pre">[</span></span><span class="pre">Type</span><span class="p"><span class="pre">[</span></span><span class="pre">BaseException</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="p"><span class="pre">...</span></span><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#superduperdb.misc.retry.Retry.exception_types" title="Link to this definition">#</a></dt>
+<span class="sig-name descname"><span class="pre">exception_types</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">Type</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="superduperdb.base.html#superduperdb.base.exceptions.BaseException" title="superduperdb.base.exceptions.BaseException"><span class="pre">BaseException</span></a><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">Tuple</span><span class="p"><span class="pre">[</span></span><span class="pre">Type</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="superduperdb.base.html#superduperdb.base.exceptions.BaseException" title="superduperdb.base.exceptions.BaseException"><span class="pre">BaseException</span></a><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="p"><span class="pre">...</span></span><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#superduperdb.misc.retry.Retry.exception_types" title="Link to this definition">#</a></dt>
 <dd></dd></dl>
 
 </dd></dl>
@@ -896,21 +918,6 @@ KeyError: ‘d’</p>
 </dd></dl>
 
 </section>
-<section id="module-superduperdb.misc.superduper">
-<span id="superduperdb-misc-superduper-module"></span><h2>superduperdb.misc.superduper module<a class="headerlink" href="#module-superduperdb.misc.superduper" title="Link to this heading">#</a></h2>
-<dl class="py function">
-<dt class="sig sig-object py" id="superduperdb.misc.superduper.superduper">
-<span class="sig-prename descclassname"><span class="pre">superduperdb.misc.superduper.</span></span><span class="sig-name descname"><span class="pre">superduper</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">item</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Any</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Any</span></span></span><a class="reference internal" href="../_modules/superduperdb/misc/superduper.html#superduper"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#superduperdb.misc.superduper.superduper" title="Link to this definition">#</a></dt>
-<dd><p>Attempts to automatically wrap an item in a superduperdb container by
-using duck typing to recognize it.</p>
-<dl class="field-list simple">
-<dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><p><strong>item</strong> – A database or model</p>
-</dd>
-</dl>
-</dd></dl>
-
-</section>
 <section id="module-superduperdb.misc.tree">
 <span id="superduperdb-misc-tree-module"></span><h2>superduperdb.misc.tree module<a class="headerlink" href="#module-superduperdb.misc.tree" title="Link to this heading">#</a></h2>
 <dl class="py function">
@@ -1012,6 +1019,11 @@ using duck typing to recognize it.</p>
 <li><a class="reference internal" href="#">superduperdb.misc package</a><ul>
 <li><a class="reference internal" href="#subpackages">Subpackages</a></li>
 <li><a class="reference internal" href="#submodules">Submodules</a></li>
+<li><a class="reference internal" href="#module-superduperdb.misc.annotations">superduperdb.misc.annotations module</a><ul>
+<li><a class="reference internal" href="#superduperdb.misc.annotations.SuperDuperDBDeprecationWarning"><code class="docutils literal notranslate"><span class="pre">SuperDuperDBDeprecationWarning</span></code></a></li>
+<li><a class="reference internal" href="#superduperdb.misc.annotations.public_api"><code class="docutils literal notranslate"><span class="pre">public_api()</span></code></a></li>
+</ul>
+</li>
 <li><a class="reference internal" href="#module-superduperdb.misc.colors">superduperdb.misc.colors module</a><ul>
 <li><a class="reference internal" href="#superduperdb.misc.colors.Colors"><code class="docutils literal notranslate"><span class="pre">Colors</span></code></a><ul>
 <li><a class="reference internal" href="#superduperdb.misc.colors.Colors.BLACK"><code class="docutils literal notranslate"><span class="pre">Colors.BLACK</span></code></a></li>
@@ -1128,10 +1140,6 @@ using duck typing to recognize it.</p>
 <li><a class="reference internal" href="#superduperdb.misc.special_dicts.MongoStyleDict"><code class="docutils literal notranslate"><span class="pre">MongoStyleDict</span></code></a></li>
 </ul>
 </li>
-<li><a class="reference internal" href="#module-superduperdb.misc.superduper">superduperdb.misc.superduper module</a><ul>
-<li><a class="reference internal" href="#superduperdb.misc.superduper.superduper"><code class="docutils literal notranslate"><span class="pre">superduper()</span></code></a></li>
-</ul>
-</li>
 <li><a class="reference internal" href="#module-superduperdb.misc.tree">superduperdb.misc.tree module</a><ul>
 <li><a class="reference internal" href="#superduperdb.misc.tree.tree_find"><code class="docutils literal notranslate"><span class="pre">tree_find()</span></code></a></li>
 <li><a class="reference internal" href="#superduperdb.misc.tree.tree_rewrite"><code class="docutils literal notranslate"><span class="pre">tree_rewrite()</span></code></a></li>
@@ -1153,8 +1161,5 @@ using duck typing to recognize it.</p>
     <script src="../_static/doctools.js?v=888ff710"></script>
     <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="../_static/scripts/furo.js?v=32e29ea5"></script>
-    <script src="../_static/clipboard.min.js?v=a7894cd8"></script>
-    <script src="../_static/copybutton.js?v=f281be69"></script>
-    <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
     </body>
 </html>

@@ -8,7 +8,6 @@
         <title>superduperdb.backends.mongodb.query - Python documentation</title>
       <link rel="stylesheet" type="text/css" href="../../../../_static/pygments.css?v=fa44fd50" />
     <link rel="stylesheet" type="text/css" href="../../../../_static/styles/furo.css?v=135e06be" />
-    <link rel="stylesheet" type="text/css" href="../../../../_static/copybutton.css?v=76b2166b" />
     <link rel="stylesheet" type="text/css" href="../../../../_static/styles/furo-extensions.css?v=36a5483c" />
     
     
@@ -162,8 +161,9 @@
 <li class="toctree-l2 has-children"><a class="reference internal" href="../../../../source/superduperdb.html">superduperdb package</a><input class="toctree-checkbox" id="toctree-checkbox-2" name="toctree-checkbox-2" role="switch" type="checkbox"/><label for="toctree-checkbox-2"><div class="visually-hidden">Toggle navigation of superduperdb package</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
 <li class="toctree-l3 has-children"><a class="reference internal" href="../../../../source/superduperdb.backends.html">superduperdb.backends package</a><input class="toctree-checkbox" id="toctree-checkbox-3" name="toctree-checkbox-3" role="switch" type="checkbox"/><label for="toctree-checkbox-3"><div class="visually-hidden">Toggle navigation of superduperdb.backends package</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
 <li class="toctree-l4"><a class="reference internal" href="../../../../source/superduperdb.backends.base.html">superduperdb.backends.base package</a></li>
-<li class="toctree-l4"><a class="reference internal" href="../../../../source/superduperdb.backends.filesystem.html">superduperdb.backends.filesystem package</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../../source/superduperdb.backends.dask.html">superduperdb.backends.dask package</a></li>
 <li class="toctree-l4"><a class="reference internal" href="../../../../source/superduperdb.backends.ibis.html">superduperdb.backends.ibis package</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../../source/superduperdb.backends.local.html">superduperdb.backends.local package</a></li>
 <li class="toctree-l4 has-children"><a class="reference internal" href="../../../../source/superduperdb.backends.mongodb.html">superduperdb.backends.mongodb package</a><input class="toctree-checkbox" id="toctree-checkbox-4" name="toctree-checkbox-4" role="switch" type="checkbox"/><label for="toctree-checkbox-4"><div class="visually-hidden">Toggle navigation of superduperdb.backends.mongodb package</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
 <li class="toctree-l5"><a class="reference internal" href="../../../../source/superduperdb.backends.mongodb.cdc.html">superduperdb.backends.mongodb.cdc package</a></li>
 </ul>
@@ -246,7 +246,6 @@
 <span class="kn">from</span> <span class="nn">superduperdb.backends.base.query</span> <span class="kn">import</span> <span class="p">(</span>
     <span class="n">CompoundSelect</span><span class="p">,</span>
     <span class="n">Delete</span><span class="p">,</span>
-    <span class="n">Featurize</span><span class="p">,</span>
     <span class="n">Insert</span><span class="p">,</span>
     <span class="n">Like</span><span class="p">,</span>
     <span class="n">QueryComponent</span><span class="p">,</span>
@@ -258,6 +257,7 @@
 <span class="p">)</span>
 <span class="kn">from</span> <span class="nn">superduperdb.base.cursor</span> <span class="kn">import</span> <span class="n">SuperDuperCursor</span>
 <span class="kn">from</span> <span class="nn">superduperdb.base.document</span> <span class="kn">import</span> <span class="n">Document</span>
+<span class="kn">from</span> <span class="nn">superduperdb.base.serializable</span> <span class="kn">import</span> <span class="n">Variable</span>
 
 
 <div class="viewcode-block" id="FindOne">
@@ -309,6 +309,7 @@
 
 <div class="viewcode-block" id="Find">
 <a class="viewcode-back" href="../../../../source/superduperdb.backends.mongodb.html#superduperdb.backends.mongodb.query.Find">[docs]</a>
+<span class="nd">@dc</span><span class="o">.</span><span class="n">dataclass</span>
 <span class="k">class</span> <span class="nc">Find</span><span class="p">(</span><span class="n">QueryComponent</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Wrapper around ``pymongo.Collection.find``</span>
@@ -316,6 +317,24 @@
 <span class="sd">    :param args: Positional arguments to ``pymongo.Collection.find``</span>
 <span class="sd">    :param kwargs: Named arguments to ``pymongo.Collection.find``</span>
 <span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="n">output_fields</span><span class="p">:</span> <span class="n">t</span><span class="o">.</span><span class="n">Optional</span><span class="p">[</span><span class="n">t</span><span class="o">.</span><span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">str</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span>
+
+    <span class="k">def</span> <span class="nf">__post_init__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">args</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">args</span> <span class="o">=</span> <span class="p">[{}]</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">args</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">args</span><span class="p">)</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">args</span><span class="p">[</span><span class="mi">1</span><span class="p">:]:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">args</span><span class="o">.</span><span class="n">append</span><span class="p">({})</span>
+
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">output_fields</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="c1"># if outputs are specified, then project to those outputs</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">args</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">update</span><span class="p">(</span>
+                <span class="p">{</span><span class="sa">f</span><span class="s1">&#39;_outputs.</span><span class="si">{</span><span class="n">k</span><span class="si">}</span><span class="s1">.</span><span class="si">{</span><span class="n">v</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">:</span> <span class="mi">1</span> <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">output_fields</span><span class="o">.</span><span class="n">items</span><span class="p">()}</span>
+            <span class="p">)</span>
+            <span class="k">if</span> <span class="s1">&#39;_id&#39;</span> <span class="ow">not</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">args</span><span class="p">[</span><span class="mi">1</span><span class="p">]:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">args</span><span class="p">[</span><span class="mi">1</span><span class="p">][</span><span class="s1">&#39;_id&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="mi">1</span>
 
     <span class="nd">@property</span>
     <span class="k">def</span> <span class="nf">select_ids</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
@@ -337,13 +356,37 @@
 
 <div class="viewcode-block" id="Find.outputs">
 <a class="viewcode-back" href="../../../../source/superduperdb.backends.mongodb.html#superduperdb.backends.mongodb.query.Find.outputs">[docs]</a>
-    <span class="k">def</span> <span class="nf">outputs</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">key</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">model</span><span class="p">:</span> <span class="nb">str</span><span class="p">):</span>
-        <span class="c1"># TODO: This was needed due to vector initialize ``.outputs``.</span>
+    <span class="k">def</span> <span class="nf">outputs</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Join the query with the outputs for a table.</span>
+
+<span class="sd">        :param **kwargs: key=model/version or key=model pairs</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">args</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">args</span><span class="p">[:])</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">args</span><span class="p">:</span>
+            <span class="n">args</span> <span class="o">=</span> <span class="p">[{}]</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">args</span><span class="p">[</span><span class="mi">1</span><span class="p">:]:</span>
+            <span class="n">args</span><span class="o">.</span><span class="n">append</span><span class="p">({})</span>
+
+        <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+            <span class="k">if</span> <span class="s1">&#39;/&#39;</span> <span class="ow">in</span> <span class="n">v</span><span class="p">:</span>
+                <span class="n">model</span><span class="p">,</span> <span class="n">version</span> <span class="o">=</span> <span class="n">v</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s1">&#39;/&#39;</span><span class="p">)</span>
+                <span class="n">args</span><span class="p">[</span><span class="mi">1</span><span class="p">][</span><span class="sa">f</span><span class="s1">&#39;_outputs.</span><span class="si">{</span><span class="n">k</span><span class="si">}</span><span class="s1">.</span><span class="si">{</span><span class="n">model</span><span class="si">}</span><span class="s1">.</span><span class="si">{</span><span class="n">version</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="mi">1</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">args</span><span class="p">[</span><span class="mi">1</span><span class="p">][</span>
+                    <span class="n">Variable</span><span class="p">(</span>
+                        <span class="sa">f</span><span class="s1">&#39;_outputs.</span><span class="si">{</span><span class="n">k</span><span class="si">}</span><span class="s1">.</span><span class="si">{</span><span class="n">v</span><span class="si">}</span><span class="s1">&#39;</span> <span class="o">+</span> <span class="s1">&#39;.</span><span class="si">{version}</span><span class="s1">&#39;</span><span class="p">,</span>
+                        <span class="k">lambda</span> <span class="n">db</span><span class="p">,</span> <span class="n">value</span><span class="p">:</span> <span class="n">value</span><span class="o">.</span><span class="n">format</span><span class="p">(</span>
+                            <span class="n">version</span><span class="o">=</span><span class="n">db</span><span class="o">.</span><span class="n">show</span><span class="p">(</span><span class="s1">&#39;model&#39;</span><span class="p">,</span> <span class="n">model</span><span class="p">)[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
+                        <span class="p">),</span>
+                    <span class="p">)</span>
+                <span class="p">]</span> <span class="o">=</span> <span class="mi">1</span>
         <span class="k">return</span> <span class="n">Find</span><span class="p">(</span>
             <span class="n">name</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">name</span><span class="p">,</span>
             <span class="nb">type</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">type</span><span class="p">,</span>
             <span class="n">args</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">args</span><span class="p">,</span>
             <span class="n">kwargs</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">kwargs</span><span class="p">,</span>
+            <span class="n">output_fields</span><span class="o">=</span><span class="n">kwargs</span><span class="p">,</span>
         <span class="p">)</span></div>
 
 
@@ -365,11 +408,16 @@
 
 <div class="viewcode-block" id="Find.select_ids_of_missing_outputs">
 <a class="viewcode-back" href="../../../../source/superduperdb.backends.mongodb.html#superduperdb.backends.mongodb.query.Find.select_ids_of_missing_outputs">[docs]</a>
-    <span class="k">def</span> <span class="nf">select_ids_of_missing_outputs</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">key</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">model</span><span class="p">:</span> <span class="nb">str</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">select_ids_of_missing_outputs</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">key</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">model</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">version</span><span class="p">:</span> <span class="nb">int</span><span class="p">):</span>
         <span class="k">assert</span> <span class="bp">self</span><span class="o">.</span><span class="n">type</span> <span class="o">==</span> <span class="n">QueryType</span><span class="o">.</span><span class="n">QUERY</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">args</span><span class="p">:</span>
             <span class="n">args</span> <span class="o">=</span> <span class="p">[</span>
-                <span class="p">{</span><span class="s1">&#39;$and&#39;</span><span class="p">:</span> <span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">args</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="p">{</span><span class="sa">f</span><span class="s1">&#39;_outputs.</span><span class="si">{</span><span class="n">key</span><span class="si">}</span><span class="s1">.</span><span class="si">{</span><span class="n">model</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">:</span> <span class="p">{</span><span class="s1">&#39;$exists&#39;</span><span class="p">:</span> <span class="mi">0</span><span class="p">}}]},</span>
+                <span class="p">{</span>
+                    <span class="s1">&#39;$and&#39;</span><span class="p">:</span> <span class="p">[</span>
+                        <span class="bp">self</span><span class="o">.</span><span class="n">args</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span>
+                        <span class="p">{</span><span class="sa">f</span><span class="s1">&#39;_outputs.</span><span class="si">{</span><span class="n">key</span><span class="si">}</span><span class="s1">.</span><span class="si">{</span><span class="n">model</span><span class="si">}</span><span class="s1">.</span><span class="si">{</span><span class="n">version</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">:</span> <span class="p">{</span><span class="s1">&#39;$exists&#39;</span><span class="p">:</span> <span class="mi">0</span><span class="p">}},</span>
+                    <span class="p">]</span>
+                <span class="p">},</span>
                 <span class="o">*</span><span class="bp">self</span><span class="o">.</span><span class="n">args</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span>
             <span class="p">]</span>
         <span class="k">else</span><span class="p">:</span>
@@ -466,7 +514,7 @@
 
 <div class="viewcode-block" id="Aggregate.select_ids_of_missing_outputs">
 <a class="viewcode-back" href="../../../../source/superduperdb.backends.mongodb.html#superduperdb.backends.mongodb.query.Aggregate.select_ids_of_missing_outputs">[docs]</a>
-    <span class="k">def</span> <span class="nf">select_ids_of_missing_outputs</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">key</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">model</span><span class="p">:</span> <span class="nb">str</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">select_ids_of_missing_outputs</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">key</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">model</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">version</span><span class="p">:</span> <span class="nb">int</span><span class="p">):</span>
         <span class="k">raise</span> <span class="ne">NotImplementedError</span></div>
 
 
@@ -486,7 +534,10 @@
         <span class="k">if</span> <span class="n">indexing_key</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s1">&#39;_outputs&#39;</span><span class="p">):</span>
             <span class="n">indexing_key</span> <span class="o">=</span> <span class="n">indexing_key</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s1">&#39;.&#39;</span><span class="p">)[</span><span class="mi">1</span><span class="p">]</span>
         <span class="n">indexing_model</span> <span class="o">=</span> <span class="n">vector_index</span><span class="o">.</span><span class="n">indexing_listener</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">identifier</span>
-        <span class="n">step</span><span class="p">[</span><span class="s1">&#39;$vectorSearch&#39;</span><span class="p">][</span><span class="s1">&#39;path&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="sa">f</span><span class="s1">&#39;_outputs.</span><span class="si">{</span><span class="n">indexing_key</span><span class="si">}</span><span class="s1">.</span><span class="si">{</span><span class="n">indexing_model</span><span class="si">}</span><span class="s1">&#39;</span>
+        <span class="n">indexing_version</span> <span class="o">=</span> <span class="n">vector_index</span><span class="o">.</span><span class="n">indexing_listener</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">version</span>
+        <span class="n">step</span><span class="p">[</span><span class="s1">&#39;$vectorSearch&#39;</span><span class="p">][</span>
+            <span class="s1">&#39;path&#39;</span>
+        <span class="p">]</span> <span class="o">=</span> <span class="sa">f</span><span class="s1">&#39;_outputs.</span><span class="si">{</span><span class="n">indexing_key</span><span class="si">}</span><span class="s1">.</span><span class="si">{</span><span class="n">indexing_model</span><span class="si">}</span><span class="s1">.</span><span class="si">{</span><span class="n">indexing_version</span><span class="si">}</span><span class="s1">&#39;</span>
         <span class="n">step</span><span class="p">[</span><span class="s1">&#39;$vectorSearch&#39;</span><span class="p">][</span><span class="s1">&#39;index&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">vector_index</span><span class="o">.</span><span class="n">identifier</span>
         <span class="k">del</span> <span class="n">step</span><span class="p">[</span><span class="s1">&#39;$vectorSearch&#39;</span><span class="p">][</span><span class="s1">&#39;like&#39;</span><span class="p">]</span>
         <span class="k">return</span> <span class="n">step</span>
@@ -538,9 +589,13 @@
             <span class="n">table_or_collection</span><span class="o">=</span><span class="n">table_or_collection</span><span class="p">,</span> <span class="n">members</span><span class="o">=</span><span class="n">members</span>
         <span class="p">)</span>
 
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">output_fields</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">query_linker</span><span class="o">.</span><span class="n">output_fields</span>
+
 <div class="viewcode-block" id="MongoCompoundSelect.outputs">
 <a class="viewcode-back" href="../../../../source/superduperdb.backends.mongodb.html#superduperdb.backends.mongodb.query.MongoCompoundSelect.outputs">[docs]</a>
-    <span class="k">def</span> <span class="nf">outputs</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">key</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">model</span><span class="p">:</span> <span class="nb">str</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">outputs</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        This method returns a query which joins a query with the outputs</span>
 <span class="sd">        for a table.</span>
@@ -554,7 +609,7 @@
         <span class="k">return</span> <span class="n">MongoCompoundSelect</span><span class="p">(</span>
             <span class="n">table_or_collection</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">table_or_collection</span><span class="p">,</span>
             <span class="n">pre_like</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">pre_like</span><span class="p">,</span>
-            <span class="n">query_linker</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">query_linker</span><span class="o">.</span><span class="n">outputs</span><span class="p">(</span><span class="n">key</span><span class="p">,</span> <span class="n">model</span><span class="p">),</span>
+            <span class="n">query_linker</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">query_linker</span><span class="o">.</span><span class="n">outputs</span><span class="p">(</span><span class="o">**</span><span class="n">kwargs</span><span class="p">),</span>
             <span class="n">post_like</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">post_like</span><span class="p">,</span>
         <span class="p">)</span></div>
 
@@ -604,12 +659,6 @@
         <span class="k">return</span> <span class="n">output</span></div>
 
 
-<div class="viewcode-block" id="MongoCompoundSelect.featurize">
-<a class="viewcode-back" href="../../../../source/superduperdb.backends.mongodb.html#superduperdb.backends.mongodb.query.MongoCompoundSelect.featurize">[docs]</a>
-    <span class="k">def</span> <span class="nf">featurize</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">features</span><span class="p">:</span> <span class="n">t</span><span class="o">.</span><span class="n">Dict</span><span class="p">):</span>
-        <span class="k">return</span> <span class="n">Featurize</span><span class="p">(</span><span class="n">features</span><span class="o">=</span><span class="n">features</span><span class="p">,</span> <span class="n">parent</span><span class="o">=</span><span class="bp">self</span><span class="p">)</span></div>
-
-
 <div class="viewcode-block" id="MongoCompoundSelect.download_update">
 <a class="viewcode-back" href="../../../../source/superduperdb.backends.mongodb.html#superduperdb.backends.mongodb.query.MongoCompoundSelect.download_update">[docs]</a>
     <span class="k">def</span> <span class="nf">download_update</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">db</span><span class="p">,</span> <span class="nb">id</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">key</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="nb">bytes</span><span class="p">:</span> <span class="nb">bytearray</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
@@ -644,6 +693,14 @@
     <span class="k">def</span> <span class="nf">query_components</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">table_or_collection</span><span class="o">.</span><span class="n">query_components</span>
 
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">output_fields</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">out</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="k">for</span> <span class="n">member</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">members</span><span class="p">:</span>
+            <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">member</span><span class="p">,</span> <span class="s1">&#39;output_fields&#39;</span><span class="p">):</span>
+                <span class="n">out</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">member</span><span class="o">.</span><span class="n">output_fields</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">out</span>
+
 <div class="viewcode-block" id="MongoQueryLinker.add_fold">
 <a class="viewcode-back" href="../../../../source/superduperdb.backends.mongodb.html#superduperdb.backends.mongodb.query.MongoQueryLinker.add_fold">[docs]</a>
     <span class="k">def</span> <span class="nf">add_fold</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">fold</span><span class="p">):</span>
@@ -661,11 +718,11 @@
 
 <div class="viewcode-block" id="MongoQueryLinker.outputs">
 <a class="viewcode-back" href="../../../../source/superduperdb.backends.mongodb.html#superduperdb.backends.mongodb.query.MongoQueryLinker.outputs">[docs]</a>
-    <span class="k">def</span> <span class="nf">outputs</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">key</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">model</span><span class="p">:</span> <span class="nb">str</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">outputs</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
         <span class="n">new_members</span> <span class="o">=</span> <span class="p">[]</span>
         <span class="k">for</span> <span class="n">member</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">members</span><span class="p">:</span>
             <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">member</span><span class="p">,</span> <span class="s1">&#39;outputs&#39;</span><span class="p">):</span>
-                <span class="n">new_members</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">member</span><span class="o">.</span><span class="n">outputs</span><span class="p">(</span><span class="n">key</span><span class="p">,</span> <span class="n">model</span><span class="p">))</span>
+                <span class="n">new_members</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">member</span><span class="o">.</span><span class="n">outputs</span><span class="p">(</span><span class="o">**</span><span class="n">kwargs</span><span class="p">))</span>
             <span class="k">else</span><span class="p">:</span>
                 <span class="n">new_members</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">member</span><span class="p">)</span>
 
@@ -705,11 +762,13 @@
         <span class="p">)</span></div>
 
 
-    <span class="k">def</span> <span class="nf">_select_ids_of_missing_outputs</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">key</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">model</span><span class="p">:</span> <span class="nb">str</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">_select_ids_of_missing_outputs</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">key</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">model</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">version</span><span class="p">:</span> <span class="nb">int</span><span class="p">):</span>
         <span class="n">new_members</span> <span class="o">=</span> <span class="p">[]</span>
         <span class="k">for</span> <span class="n">member</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">members</span><span class="p">:</span>
             <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">member</span><span class="p">,</span> <span class="s1">&#39;select_ids_of_missing_outputs&#39;</span><span class="p">):</span>
-                <span class="n">new_members</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">member</span><span class="o">.</span><span class="n">select_ids_of_missing_outputs</span><span class="p">(</span><span class="n">key</span><span class="p">,</span> <span class="n">model</span><span class="p">))</span>
+                <span class="n">new_members</span><span class="o">.</span><span class="n">append</span><span class="p">(</span>
+                    <span class="n">member</span><span class="o">.</span><span class="n">select_ids_of_missing_outputs</span><span class="p">(</span><span class="n">key</span><span class="p">,</span> <span class="n">model</span><span class="p">,</span> <span class="n">version</span><span class="o">=</span><span class="n">version</span><span class="p">)</span>
+                <span class="p">)</span>
         <span class="k">return</span> <span class="n">MongoQueryLinker</span><span class="p">(</span>
             <span class="n">table_or_collection</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">table_or_collection</span><span class="p">,</span>
             <span class="n">members</span><span class="o">=</span><span class="n">new_members</span><span class="p">,</span>
@@ -1042,6 +1101,7 @@
         <span class="n">ids</span><span class="p">:</span> <span class="n">t</span><span class="o">.</span><span class="n">Sequence</span><span class="p">[</span><span class="n">t</span><span class="o">.</span><span class="n">Any</span><span class="p">],</span>
         <span class="n">key</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
         <span class="n">model</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+        <span class="n">version</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
         <span class="n">outputs</span><span class="p">:</span> <span class="n">t</span><span class="o">.</span><span class="n">Sequence</span><span class="p">[</span><span class="n">t</span><span class="o">.</span><span class="n">Any</span><span class="p">],</span>
         <span class="n">document_embedded</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
         <span class="n">flatten</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
@@ -1063,7 +1123,7 @@
                 <span class="p">[</span>
                     <span class="n">_UpdateOne</span><span class="p">(</span>
                         <span class="p">{</span><span class="s1">&#39;_id&#39;</span><span class="p">:</span> <span class="n">ObjectId</span><span class="p">(</span><span class="nb">id</span><span class="p">)},</span>
-                        <span class="p">{</span><span class="s1">&#39;$set&#39;</span><span class="p">:</span> <span class="p">{</span><span class="sa">f</span><span class="s1">&#39;_outputs.</span><span class="si">{</span><span class="n">key</span><span class="si">}</span><span class="s1">.</span><span class="si">{</span><span class="n">model</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">:</span> <span class="n">outputs</span><span class="p">[</span><span class="n">i</span><span class="p">]}},</span>
+                        <span class="p">{</span><span class="s1">&#39;$set&#39;</span><span class="p">:</span> <span class="p">{</span><span class="sa">f</span><span class="s1">&#39;_outputs.</span><span class="si">{</span><span class="n">key</span><span class="si">}</span><span class="s1">.</span><span class="si">{</span><span class="n">model</span><span class="si">}</span><span class="s1">.</span><span class="si">{</span><span class="n">version</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">:</span> <span class="n">outputs</span><span class="p">[</span><span class="n">i</span><span class="p">]}},</span>
                     <span class="p">)</span>
                     <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="nb">id</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">ids</span><span class="p">)</span>
                 <span class="p">]</span>
@@ -1078,7 +1138,9 @@
                             <span class="n">bulk_docs</span><span class="o">.</span><span class="n">append</span><span class="p">(</span>
                                 <span class="n">_InsertOne</span><span class="p">(</span>
                                     <span class="p">{</span>
-                                        <span class="s1">&#39;_outputs&#39;</span><span class="p">:</span> <span class="p">{</span><span class="n">key</span><span class="p">:</span> <span class="p">{</span><span class="n">model</span><span class="p">:</span> <span class="n">output</span><span class="p">}},</span>
+                                        <span class="s1">&#39;_outputs&#39;</span><span class="p">:</span> <span class="p">{</span>
+                                            <span class="n">key</span><span class="p">:</span> <span class="p">{</span><span class="n">model</span><span class="p">:</span> <span class="p">{</span><span class="nb">str</span><span class="p">(</span><span class="n">version</span><span class="p">):</span> <span class="n">output</span><span class="p">}}</span>
+                                        <span class="p">},</span>
                                         <span class="s1">&#39;_source&#39;</span><span class="p">:</span> <span class="n">ObjectId</span><span class="p">(</span><span class="nb">id</span><span class="p">),</span>
                                         <span class="s1">&#39;_offset&#39;</span><span class="p">:</span> <span class="n">offset</span><span class="p">,</span>
                                     <span class="p">}</span>
@@ -1088,7 +1150,9 @@
                         <span class="n">bulk_docs</span><span class="o">.</span><span class="n">append</span><span class="p">(</span>
                             <span class="n">_InsertOne</span><span class="p">(</span>
                                 <span class="p">{</span>
-                                    <span class="s1">&#39;_outputs&#39;</span><span class="p">:</span> <span class="p">{</span><span class="n">key</span><span class="p">:</span> <span class="p">{</span><span class="n">model</span><span class="p">:</span> <span class="n">_outputs</span><span class="p">}},</span>
+                                    <span class="s1">&#39;_outputs&#39;</span><span class="p">:</span> <span class="p">{</span>
+                                        <span class="n">key</span><span class="p">:</span> <span class="p">{</span><span class="n">model</span><span class="p">:</span> <span class="p">{</span><span class="nb">str</span><span class="p">(</span><span class="n">version</span><span class="p">):</span> <span class="n">_outputs</span><span class="p">}}</span>
+                                    <span class="p">},</span>
                                     <span class="s1">&#39;_source&#39;</span><span class="p">:</span> <span class="n">ObjectId</span><span class="p">(</span><span class="nb">id</span><span class="p">),</span>
                                     <span class="s1">&#39;_offset&#39;</span><span class="p">:</span> <span class="mi">0</span><span class="p">,</span>
                                 <span class="p">}</span>
@@ -1098,7 +1162,10 @@
             <span class="k">else</span><span class="p">:</span>
                 <span class="n">bulk_docs</span> <span class="o">=</span> <span class="p">[</span>
                     <span class="n">_InsertOne</span><span class="p">(</span>
-                        <span class="p">{</span><span class="s1">&#39;_id&#39;</span><span class="p">:</span> <span class="n">ObjectId</span><span class="p">(</span><span class="nb">id</span><span class="p">),</span> <span class="s1">&#39;_outputs&#39;</span><span class="p">:</span> <span class="p">{</span><span class="n">key</span><span class="p">:</span> <span class="p">{</span><span class="n">model</span><span class="p">:</span> <span class="n">outputs</span><span class="p">[</span><span class="n">i</span><span class="p">]}}}</span>
+                        <span class="p">{</span>
+                            <span class="s1">&#39;_id&#39;</span><span class="p">:</span> <span class="n">ObjectId</span><span class="p">(</span><span class="nb">id</span><span class="p">),</span>
+                            <span class="s1">&#39;_outputs&#39;</span><span class="p">:</span> <span class="p">{</span><span class="n">key</span><span class="p">:</span> <span class="p">{</span><span class="n">model</span><span class="p">:</span> <span class="p">{</span><span class="nb">str</span><span class="p">(</span><span class="n">version</span><span class="p">):</span> <span class="n">outputs</span><span class="p">[</span><span class="n">i</span><span class="p">]}}},</span>
+                        <span class="p">}</span>
                     <span class="p">)</span>
                     <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="nb">id</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">ids</span><span class="p">)</span>
                 <span class="p">]</span>
@@ -1144,10 +1211,5 @@
     <script src="../../../../_static/doctools.js?v=888ff710"></script>
     <script src="../../../../_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="../../../../_static/scripts/furo.js?v=32e29ea5"></script>
-    <script src="../../../../_static/clipboard.min.js?v=a7894cd8"></script>
-    <script src="../../../../_static/copybutton.js?v=f281be69"></script>
-    <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
-    <script src="https://unpkg.com/mermaid@10.2.0/dist/mermaid.min.js"></script>
-    <script>mermaid.initialize({startOnLoad:true});</script>
     </body>
 </html>

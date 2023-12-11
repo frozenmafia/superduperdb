@@ -8,7 +8,6 @@
         <title>superduperdb.components.vector_index - Python documentation</title>
       <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=fa44fd50" />
     <link rel="stylesheet" type="text/css" href="../../../_static/styles/furo.css?v=135e06be" />
-    <link rel="stylesheet" type="text/css" href="../../../_static/copybutton.css?v=76b2166b" />
     <link rel="stylesheet" type="text/css" href="../../../_static/styles/furo-extensions.css?v=36a5483c" />
     
     
@@ -162,8 +161,9 @@
 <li class="toctree-l2 has-children"><a class="reference internal" href="../../../source/superduperdb.html">superduperdb package</a><input class="toctree-checkbox" id="toctree-checkbox-2" name="toctree-checkbox-2" role="switch" type="checkbox"/><label for="toctree-checkbox-2"><div class="visually-hidden">Toggle navigation of superduperdb package</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
 <li class="toctree-l3 has-children"><a class="reference internal" href="../../../source/superduperdb.backends.html">superduperdb.backends package</a><input class="toctree-checkbox" id="toctree-checkbox-3" name="toctree-checkbox-3" role="switch" type="checkbox"/><label for="toctree-checkbox-3"><div class="visually-hidden">Toggle navigation of superduperdb.backends package</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
 <li class="toctree-l4"><a class="reference internal" href="../../../source/superduperdb.backends.base.html">superduperdb.backends.base package</a></li>
-<li class="toctree-l4"><a class="reference internal" href="../../../source/superduperdb.backends.filesystem.html">superduperdb.backends.filesystem package</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../source/superduperdb.backends.dask.html">superduperdb.backends.dask package</a></li>
 <li class="toctree-l4"><a class="reference internal" href="../../../source/superduperdb.backends.ibis.html">superduperdb.backends.ibis package</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../source/superduperdb.backends.local.html">superduperdb.backends.local package</a></li>
 <li class="toctree-l4 has-children"><a class="reference internal" href="../../../source/superduperdb.backends.mongodb.html">superduperdb.backends.mongodb package</a><input class="toctree-checkbox" id="toctree-checkbox-4" name="toctree-checkbox-4" role="switch" type="checkbox"/><label for="toctree-checkbox-4"><div class="visually-hidden">Toggle navigation of superduperdb.backends.mongodb package</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
 <li class="toctree-l5"><a class="reference internal" href="../../../source/superduperdb.backends.mongodb.cdc.html">superduperdb.backends.mongodb.cdc package</a></li>
 </ul>
@@ -236,6 +236,7 @@
 <span></span><span class="kn">import</span> <span class="nn">dataclasses</span> <span class="k">as</span> <span class="nn">dc</span>
 <span class="kn">import</span> <span class="nn">typing</span> <span class="k">as</span> <span class="nn">t</span>
 
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
 <span class="kn">from</span> <span class="nn">overrides</span> <span class="kn">import</span> <span class="n">override</span>
 
 <span class="kn">import</span> <span class="nn">superduperdb</span> <span class="k">as</span> <span class="nn">s</span>
@@ -245,6 +246,7 @@
 <span class="kn">from</span> <span class="nn">superduperdb.components.encoder</span> <span class="kn">import</span> <span class="n">Encoder</span>
 <span class="kn">from</span> <span class="nn">superduperdb.components.listener</span> <span class="kn">import</span> <span class="n">Listener</span>
 <span class="kn">from</span> <span class="nn">superduperdb.ext.utils</span> <span class="kn">import</span> <span class="n">str_shape</span>
+<span class="kn">from</span> <span class="nn">superduperdb.misc.annotations</span> <span class="kn">import</span> <span class="n">public_api</span>
 <span class="kn">from</span> <span class="nn">superduperdb.misc.special_dicts</span> <span class="kn">import</span> <span class="n">MongoStyleDict</span>
 <span class="kn">from</span> <span class="nn">superduperdb.vector_search.base</span> <span class="kn">import</span> <span class="n">VectorIndexMeasureType</span>
 
@@ -254,37 +256,36 @@
 
 <div class="viewcode-block" id="VectorIndex">
 <a class="viewcode-back" href="../../../source/superduperdb.components.html#superduperdb.VectorIndex">[docs]</a>
-<span class="nd">@dc</span><span class="o">.</span><span class="n">dataclass</span>
+<span class="nd">@public_api</span><span class="p">(</span><span class="n">stability</span><span class="o">=</span><span class="s1">&#39;stable&#39;</span><span class="p">)</span>
+<span class="nd">@dc</span><span class="o">.</span><span class="n">dataclass</span><span class="p">(</span><span class="n">kw_only</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
 <span class="k">class</span> <span class="nc">VectorIndex</span><span class="p">(</span><span class="n">Component</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    A component carrying the information to apply a vector index to a ``DB`` instance</span>
-
-<span class="sd">    :param identifier: Unique string identifier of index</span>
+<span class="sd">    {component_parameters}</span>
 <span class="sd">    :param indexing_listener: Listener which is applied to created vectors</span>
 <span class="sd">    :param compatible_listener: Listener which is applied to vectors to be compared</span>
 <span class="sd">    :param measure: Measure to use for comparison</span>
-<span class="sd">    :param version: version of this index</span>
 <span class="sd">    :param metric_values: Metric values for this index</span>
 <span class="sd">    &quot;&quot;&quot;</span>
 
-    <span class="n">identifier</span><span class="p">:</span> <span class="nb">str</span>
-    <span class="n">indexing_listener</span><span class="p">:</span> <span class="n">t</span><span class="o">.</span><span class="n">Union</span><span class="p">[</span><span class="n">Listener</span><span class="p">,</span> <span class="nb">str</span><span class="p">]</span>
-    <span class="n">compatible_listener</span><span class="p">:</span> <span class="n">t</span><span class="o">.</span><span class="n">Union</span><span class="p">[</span><span class="kc">None</span><span class="p">,</span> <span class="n">Listener</span><span class="p">,</span> <span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>
-    <span class="n">measure</span><span class="p">:</span> <span class="n">VectorIndexMeasureType</span> <span class="o">=</span> <span class="n">VectorIndexMeasureType</span><span class="o">.</span><span class="n">cosine</span>
-    <span class="n">version</span><span class="p">:</span> <span class="n">t</span><span class="o">.</span><span class="n">Optional</span><span class="p">[</span><span class="nb">int</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>
-    <span class="n">metric_values</span><span class="p">:</span> <span class="n">t</span><span class="o">.</span><span class="n">Optional</span><span class="p">[</span><span class="n">t</span><span class="o">.</span><span class="n">Dict</span><span class="p">]</span> <span class="o">=</span> <span class="n">dc</span><span class="o">.</span><span class="n">field</span><span class="p">(</span><span class="n">default_factory</span><span class="o">=</span><span class="nb">dict</span><span class="p">)</span>
+    <span class="vm">__doc__</span> <span class="o">=</span> <span class="vm">__doc__</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">component_parameters</span><span class="o">=</span><span class="n">Component</span><span class="o">.</span><span class="vm">__doc__</span><span class="p">)</span>
 
     <span class="n">type_id</span><span class="p">:</span> <span class="n">t</span><span class="o">.</span><span class="n">ClassVar</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="s1">&#39;vector_index&#39;</span>
 
-<div class="viewcode-block" id="VectorIndex.on_create">
-<a class="viewcode-back" href="../../../source/superduperdb.components.html#superduperdb.VectorIndex.on_create">[docs]</a>
+    <span class="n">indexing_listener</span><span class="p">:</span> <span class="n">t</span><span class="o">.</span><span class="n">Union</span><span class="p">[</span><span class="n">Listener</span><span class="p">,</span> <span class="nb">str</span><span class="p">]</span>
+    <span class="n">compatible_listener</span><span class="p">:</span> <span class="n">t</span><span class="o">.</span><span class="n">Union</span><span class="p">[</span><span class="kc">None</span><span class="p">,</span> <span class="n">Listener</span><span class="p">,</span> <span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>
+    <span class="n">measure</span><span class="p">:</span> <span class="n">VectorIndexMeasureType</span> <span class="o">=</span> <span class="n">VectorIndexMeasureType</span><span class="o">.</span><span class="n">cosine</span>
+    <span class="n">metric_values</span><span class="p">:</span> <span class="n">t</span><span class="o">.</span><span class="n">Optional</span><span class="p">[</span><span class="n">t</span><span class="o">.</span><span class="n">Dict</span><span class="p">]</span> <span class="o">=</span> <span class="n">dc</span><span class="o">.</span><span class="n">field</span><span class="p">(</span><span class="n">default_factory</span><span class="o">=</span><span class="nb">dict</span><span class="p">)</span>
+
+<div class="viewcode-block" id="VectorIndex.post_create">
+<a class="viewcode-back" href="../../../source/superduperdb.components.html#superduperdb.VectorIndex.post_create">[docs]</a>
     <span class="nd">@override</span>
-    <span class="k">def</span> <span class="nf">on_create</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">db</span><span class="p">:</span> <span class="n">Datalayer</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+    <span class="k">def</span> <span class="nf">post_create</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">db</span><span class="p">:</span> <span class="n">Datalayer</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="n">post_create</span><span class="p">(</span><span class="n">db</span><span class="p">)</span>
         <span class="k">if</span> <span class="n">s</span><span class="o">.</span><span class="n">CFG</span><span class="o">.</span><span class="n">vector_search</span> <span class="o">==</span> <span class="n">s</span><span class="o">.</span><span class="n">CFG</span><span class="o">.</span><span class="n">data_backend</span><span class="p">:</span>
             <span class="k">if</span> <span class="p">(</span><span class="n">create</span> <span class="o">:=</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">db</span><span class="o">.</span><span class="n">databackend</span><span class="p">,</span> <span class="s1">&#39;create_vector_index&#39;</span><span class="p">,</span> <span class="kc">None</span><span class="p">))</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
                 <span class="n">msg</span> <span class="o">=</span> <span class="s1">&#39;VectorIndex is not supported by the current database backend&#39;</span>
                 <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="n">msg</span><span class="p">)</span>
-
             <span class="n">create</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span></div>
 
 
@@ -319,23 +320,15 @@
         <span class="n">keys</span><span class="p">:</span> <span class="n">t</span><span class="o">.</span><span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">],</span>
         <span class="n">db</span><span class="p">:</span> <span class="n">t</span><span class="o">.</span><span class="n">Any</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
         <span class="n">outputs</span><span class="p">:</span> <span class="n">t</span><span class="o">.</span><span class="n">Optional</span><span class="p">[</span><span class="n">t</span><span class="o">.</span><span class="n">Dict</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
-        <span class="n">featurize</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
     <span class="p">):</span>
         <span class="n">document</span> <span class="o">=</span> <span class="n">MongoStyleDict</span><span class="p">(</span><span class="n">like</span><span class="o">.</span><span class="n">unpack</span><span class="p">())</span>
-        <span class="k">if</span> <span class="n">featurize</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">outputs</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
             <span class="n">outputs</span> <span class="o">=</span> <span class="n">outputs</span> <span class="ow">or</span> <span class="p">{}</span>
             <span class="k">if</span> <span class="s1">&#39;_outputs&#39;</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">document</span><span class="p">:</span>
                 <span class="n">document</span><span class="p">[</span><span class="s1">&#39;_outputs&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="p">{}</span>
             <span class="n">document</span><span class="p">[</span><span class="s1">&#39;_outputs&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">outputs</span><span class="p">)</span>
 
             <span class="k">assert</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">indexing_listener</span><span class="p">,</span> <span class="nb">str</span><span class="p">)</span>
-            <span class="n">features</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">indexing_listener</span><span class="o">.</span><span class="n">features</span> <span class="ow">or</span> <span class="p">()</span>
-            <span class="k">for</span> <span class="n">subkey</span> <span class="ow">in</span> <span class="n">features</span><span class="p">:</span>
-                <span class="n">subout</span> <span class="o">=</span> <span class="n">document</span><span class="p">[</span><span class="s1">&#39;_outputs&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">setdefault</span><span class="p">(</span><span class="n">subkey</span><span class="p">,</span> <span class="p">{})</span>
-                <span class="n">f_subkey</span> <span class="o">=</span> <span class="n">features</span><span class="p">[</span><span class="n">subkey</span><span class="p">]</span>
-                <span class="k">if</span> <span class="n">f_subkey</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">subout</span><span class="p">:</span>
-                    <span class="n">subout</span><span class="p">[</span><span class="n">f_subkey</span><span class="p">]</span> <span class="o">=</span> <span class="n">db</span><span class="o">.</span><span class="n">models</span><span class="p">[</span><span class="n">f_subkey</span><span class="p">]</span><span class="o">.</span><span class="n">_predict</span><span class="p">(</span><span class="n">document</span><span class="p">[</span><span class="n">subkey</span><span class="p">])</span>
-                <span class="n">document</span><span class="p">[</span><span class="n">subkey</span><span class="p">]</span> <span class="o">=</span> <span class="n">subout</span><span class="p">[</span><span class="n">f_subkey</span><span class="p">]</span>
         <span class="n">available_keys</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">document</span><span class="o">.</span><span class="n">keys</span><span class="p">())</span> <span class="o">+</span> <span class="p">[</span><span class="s1">&#39;_base&#39;</span><span class="p">]</span>
         <span class="k">try</span><span class="p">:</span>
             <span class="n">model_name</span><span class="p">,</span> <span class="n">key</span> <span class="o">=</span> <span class="nb">next</span><span class="p">(</span>
@@ -355,7 +348,7 @@
 
         <span class="n">model</span> <span class="o">=</span> <span class="n">db</span><span class="o">.</span><span class="n">models</span><span class="p">[</span><span class="n">model_name</span><span class="p">]</span>
         <span class="k">return</span> <span class="p">(</span>
-            <span class="n">model</span><span class="o">.</span><span class="n">predict</span><span class="p">(</span><span class="n">model_input</span><span class="p">,</span> <span class="n">one</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">distributed</span><span class="o">=</span><span class="kc">False</span><span class="p">),</span>
+            <span class="n">model</span><span class="o">.</span><span class="n">predict</span><span class="p">(</span><span class="n">model_input</span><span class="p">,</span> <span class="n">one</span><span class="o">=</span><span class="kc">True</span><span class="p">),</span>
             <span class="n">model</span><span class="o">.</span><span class="n">identifier</span><span class="p">,</span>
             <span class="n">key</span><span class="p">,</span>
         <span class="p">)</span></div>
@@ -369,7 +362,6 @@
         <span class="n">db</span><span class="p">:</span> <span class="n">t</span><span class="o">.</span><span class="n">Any</span><span class="p">,</span>
         <span class="n">id_field</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s1">&#39;_id&#39;</span><span class="p">,</span>
         <span class="n">outputs</span><span class="p">:</span> <span class="n">t</span><span class="o">.</span><span class="n">Optional</span><span class="p">[</span><span class="n">t</span><span class="o">.</span><span class="n">Dict</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
-        <span class="n">featurize</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
         <span class="n">ids</span><span class="p">:</span> <span class="n">t</span><span class="o">.</span><span class="n">Optional</span><span class="p">[</span><span class="n">t</span><span class="o">.</span><span class="n">Sequence</span><span class="p">[</span><span class="nb">str</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
         <span class="n">n</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">100</span><span class="p">,</span>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">t</span><span class="o">.</span><span class="n">Tuple</span><span class="p">[</span><span class="n">t</span><span class="o">.</span><span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">],</span> <span class="n">t</span><span class="o">.</span><span class="n">List</span><span class="p">[</span><span class="nb">float</span><span class="p">]]:</span>
@@ -379,7 +371,6 @@
 <span class="sd">        :param like: The document to compare against</span>
 <span class="sd">        :param db: The datastore to use</span>
 <span class="sd">        :param outputs: An optional dictionary</span>
-<span class="sd">        :param featurize: Enable featurization</span>
 <span class="sd">        :param ids: A list of ids to match</span>
 <span class="sd">        :param n: Number of items to return</span>
 <span class="sd">        &quot;&quot;&quot;</span>
@@ -399,7 +390,6 @@
             <span class="n">keys</span><span class="o">=</span><span class="n">keys</span><span class="p">,</span>
             <span class="n">db</span><span class="o">=</span><span class="n">db</span><span class="p">,</span>
             <span class="n">outputs</span><span class="o">=</span><span class="n">outputs</span><span class="p">,</span>
-            <span class="n">featurize</span><span class="o">=</span><span class="n">featurize</span><span class="p">,</span>
         <span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
 
         <span class="k">return</span> <span class="n">db</span><span class="o">.</span><span class="n">fast_vector_searchers</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">identifier</span><span class="p">]</span><span class="o">.</span><span class="n">find_nearest_from_array</span><span class="p">(</span>
@@ -434,6 +424,31 @@
 
 
 
+<div class="viewcode-block" id="EncodeArray">
+<a class="viewcode-back" href="../../../source/superduperdb.components.html#superduperdb.EncodeArray">[docs]</a>
+<span class="k">class</span> <span class="nc">EncodeArray</span><span class="p">:</span>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">dtype</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">dtype</span> <span class="o">=</span> <span class="n">dtype</span>
+
+    <span class="k">def</span> <span class="fm">__call__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">):</span>
+        <span class="n">x</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">x</span><span class="o">.</span><span class="n">dtype</span> <span class="o">!=</span> <span class="bp">self</span><span class="o">.</span><span class="n">dtype</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;dtype was </span><span class="si">{</span><span class="n">x</span><span class="o">.</span><span class="n">dtype</span><span class="si">}</span><span class="s1">, expected </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">dtype</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">)</span>
+        <span class="k">return</span> <span class="nb">memoryview</span><span class="p">(</span><span class="n">x</span><span class="p">)</span><span class="o">.</span><span class="n">tobytes</span><span class="p">()</span></div>
+
+
+
+<div class="viewcode-block" id="DecodeArray">
+<a class="viewcode-back" href="../../../source/superduperdb.components.html#superduperdb.DecodeArray">[docs]</a>
+<span class="k">class</span> <span class="nc">DecodeArray</span><span class="p">:</span>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">dtype</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">dtype</span> <span class="o">=</span> <span class="n">dtype</span>
+
+    <span class="k">def</span> <span class="fm">__call__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="nb">bytes</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">frombuffer</span><span class="p">(</span><span class="nb">bytes</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">dtype</span><span class="p">)</span><span class="o">.</span><span class="n">tolist</span><span class="p">()</span></div>
+
+
+
 <div class="viewcode-block" id="vector">
 <a class="viewcode-back" href="../../../source/superduperdb.components.html#superduperdb.vector">[docs]</a>
 <span class="k">def</span> <span class="nf">vector</span><span class="p">(</span><span class="n">shape</span><span class="p">):</span>
@@ -447,6 +462,24 @@
         <span class="n">shape</span><span class="o">=</span><span class="n">shape</span><span class="p">,</span>
         <span class="n">encoder</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
         <span class="n">decoder</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+    <span class="p">)</span></div>
+
+
+
+<div class="viewcode-block" id="sqlvector">
+<a class="viewcode-back" href="../../../source/superduperdb.components.html#superduperdb.sqlvector">[docs]</a>
+<span class="k">def</span> <span class="nf">sqlvector</span><span class="p">(</span><span class="n">shape</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Create an encoder for a vector (list of ints/ floats) of a given shape</span>
+<span class="sd">    compatible with sql databases.</span>
+
+<span class="sd">    :param shape: The shape of the vector</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">return</span> <span class="n">Encoder</span><span class="p">(</span>
+        <span class="n">identifier</span><span class="o">=</span><span class="sa">f</span><span class="s1">&#39;sqlvector[</span><span class="si">{</span><span class="n">str_shape</span><span class="p">(</span><span class="n">shape</span><span class="p">)</span><span class="si">}</span><span class="s1">]&#39;</span><span class="p">,</span>
+        <span class="n">shape</span><span class="o">=</span><span class="n">shape</span><span class="p">,</span>
+        <span class="n">encoder</span><span class="o">=</span><span class="n">EncodeArray</span><span class="p">(</span><span class="n">dtype</span><span class="o">=</span><span class="s1">&#39;float64&#39;</span><span class="p">),</span>
+        <span class="n">decoder</span><span class="o">=</span><span class="n">DecodeArray</span><span class="p">(</span><span class="n">dtype</span><span class="o">=</span><span class="s1">&#39;float64&#39;</span><span class="p">),</span>
     <span class="p">)</span></div>
 
 </pre></div>
@@ -485,10 +518,5 @@
     <script src="../../../_static/doctools.js?v=888ff710"></script>
     <script src="../../../_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="../../../_static/scripts/furo.js?v=32e29ea5"></script>
-    <script src="../../../_static/clipboard.min.js?v=a7894cd8"></script>
-    <script src="../../../_static/copybutton.js?v=f281be69"></script>
-    <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
-    <script src="https://unpkg.com/mermaid@10.2.0/dist/mermaid.min.js"></script>
-    <script>mermaid.initialize({startOnLoad:true});</script>
     </body>
 </html>

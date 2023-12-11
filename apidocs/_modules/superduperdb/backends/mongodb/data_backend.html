@@ -8,7 +8,6 @@
         <title>superduperdb.backends.mongodb.data_backend - Python documentation</title>
       <link rel="stylesheet" type="text/css" href="../../../../_static/pygments.css?v=fa44fd50" />
     <link rel="stylesheet" type="text/css" href="../../../../_static/styles/furo.css?v=135e06be" />
-    <link rel="stylesheet" type="text/css" href="../../../../_static/copybutton.css?v=76b2166b" />
     <link rel="stylesheet" type="text/css" href="../../../../_static/styles/furo-extensions.css?v=36a5483c" />
     
     
@@ -162,8 +161,9 @@
 <li class="toctree-l2 has-children"><a class="reference internal" href="../../../../source/superduperdb.html">superduperdb package</a><input class="toctree-checkbox" id="toctree-checkbox-2" name="toctree-checkbox-2" role="switch" type="checkbox"/><label for="toctree-checkbox-2"><div class="visually-hidden">Toggle navigation of superduperdb package</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
 <li class="toctree-l3 has-children"><a class="reference internal" href="../../../../source/superduperdb.backends.html">superduperdb.backends package</a><input class="toctree-checkbox" id="toctree-checkbox-3" name="toctree-checkbox-3" role="switch" type="checkbox"/><label for="toctree-checkbox-3"><div class="visually-hidden">Toggle navigation of superduperdb.backends package</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
 <li class="toctree-l4"><a class="reference internal" href="../../../../source/superduperdb.backends.base.html">superduperdb.backends.base package</a></li>
-<li class="toctree-l4"><a class="reference internal" href="../../../../source/superduperdb.backends.filesystem.html">superduperdb.backends.filesystem package</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../../source/superduperdb.backends.dask.html">superduperdb.backends.dask package</a></li>
 <li class="toctree-l4"><a class="reference internal" href="../../../../source/superduperdb.backends.ibis.html">superduperdb.backends.ibis package</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../../source/superduperdb.backends.local.html">superduperdb.backends.local package</a></li>
 <li class="toctree-l4 has-children"><a class="reference internal" href="../../../../source/superduperdb.backends.mongodb.html">superduperdb.backends.mongodb package</a><input class="toctree-checkbox" id="toctree-checkbox-4" name="toctree-checkbox-4" role="switch" type="checkbox"/><label for="toctree-checkbox-4"><div class="visually-hidden">Toggle navigation of superduperdb.backends.mongodb package</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
 <li class="toctree-l5"><a class="reference internal" href="../../../../source/superduperdb.backends.mongodb.cdc.html">superduperdb.backends.mongodb.cdc package</a></li>
 </ul>
@@ -266,6 +266,12 @@
         <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">conn</span><span class="o">=</span><span class="n">conn</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="n">name</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_db</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">conn</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">name</span><span class="p">]</span>
 
+<div class="viewcode-block" id="MongoDataBackend.url">
+<a class="viewcode-back" href="../../../../source/superduperdb.backends.mongodb.html#superduperdb.backends.mongodb.data_backend.MongoDataBackend.url">[docs]</a>
+    <span class="k">def</span> <span class="nf">url</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">conn</span><span class="o">.</span><span class="n">HOST</span> <span class="o">+</span> <span class="s1">&#39;:&#39;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">conn</span><span class="o">.</span><span class="n">PORT</span><span class="p">)</span> <span class="o">+</span> <span class="s1">&#39;/&#39;</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">name</span></div>
+
+
     <span class="nd">@property</span>
     <span class="k">def</span> <span class="nf">db</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_db</span>
@@ -282,7 +288,7 @@
         <span class="kn">from</span> <span class="nn">mongomock</span> <span class="kn">import</span> <span class="n">MongoClient</span> <span class="k">as</span> <span class="n">MockClient</span>
 
         <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">conn</span><span class="p">,</span> <span class="n">MockClient</span><span class="p">):</span>
-            <span class="kn">from</span> <span class="nn">superduperdb.backends.filesystem.artifacts</span> <span class="kn">import</span> <span class="p">(</span>
+            <span class="kn">from</span> <span class="nn">superduperdb.backends.local.artifacts</span> <span class="kn">import</span> <span class="p">(</span>
                 <span class="n">FileSystemArtifactStore</span><span class="p">,</span>
             <span class="p">)</span>
 
@@ -382,14 +388,33 @@
         <span class="k">if</span> <span class="n">re</span><span class="o">.</span><span class="n">match</span><span class="p">(</span><span class="s1">&#39;^_outputs\.[A-Za-z0-9_]+\.[A-Za-z0-9_]+&#39;</span><span class="p">,</span> <span class="n">key</span><span class="p">):</span>
             <span class="n">key</span> <span class="o">=</span> <span class="n">key</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s1">&#39;.&#39;</span><span class="p">)[</span><span class="mi">1</span><span class="p">]</span>
         <span class="n">model</span> <span class="o">=</span> <span class="n">vector_index</span><span class="o">.</span><span class="n">indexing_listener</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">identifier</span>
-        <span class="n">fields</span> <span class="o">=</span> <span class="p">{</span>
-            <span class="n">model</span><span class="p">:</span> <span class="p">[</span>
+        <span class="n">version</span> <span class="o">=</span> <span class="n">vector_index</span><span class="o">.</span><span class="n">indexing_listener</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">version</span>
+        <span class="n">fields4</span> <span class="o">=</span> <span class="p">{</span>
+            <span class="nb">str</span><span class="p">(</span><span class="n">version</span><span class="p">):</span> <span class="p">[</span>
                 <span class="p">{</span>
                     <span class="s2">&quot;dimensions&quot;</span><span class="p">:</span> <span class="n">vector_index</span><span class="o">.</span><span class="n">dimensions</span><span class="p">,</span>
                     <span class="s2">&quot;similarity&quot;</span><span class="p">:</span> <span class="n">vector_index</span><span class="o">.</span><span class="n">measure</span><span class="p">,</span>
                     <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;knnVector&quot;</span><span class="p">,</span>
                 <span class="p">}</span>
             <span class="p">]</span>
+        <span class="p">}</span>
+        <span class="n">fields3</span> <span class="o">=</span> <span class="p">{</span>
+            <span class="n">model</span><span class="p">:</span> <span class="p">{</span>
+                <span class="s2">&quot;fields&quot;</span><span class="p">:</span> <span class="n">fields4</span><span class="p">,</span>
+                <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;document&quot;</span><span class="p">,</span>
+            <span class="p">}</span>
+        <span class="p">}</span>
+        <span class="n">fields2</span> <span class="o">=</span> <span class="p">{</span>
+            <span class="n">key</span><span class="p">:</span> <span class="p">{</span>
+                <span class="s2">&quot;fields&quot;</span><span class="p">:</span> <span class="n">fields3</span><span class="p">,</span>
+                <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;document&quot;</span><span class="p">,</span>
+            <span class="p">}</span>
+        <span class="p">}</span>
+        <span class="n">fields1</span> <span class="o">=</span> <span class="p">{</span>
+            <span class="s2">&quot;_outputs&quot;</span><span class="p">:</span> <span class="p">{</span>
+                <span class="s2">&quot;fields&quot;</span><span class="p">:</span> <span class="n">fields2</span><span class="p">,</span>
+                <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;document&quot;</span><span class="p">,</span>
+            <span class="p">}</span>
         <span class="p">}</span>
         <span class="n">index_definition</span> <span class="o">=</span> <span class="p">{</span>
             <span class="s2">&quot;createSearchIndexes&quot;</span><span class="p">:</span> <span class="n">collection</span><span class="p">,</span>
@@ -399,17 +424,7 @@
                     <span class="s2">&quot;definition&quot;</span><span class="p">:</span> <span class="p">{</span>
                         <span class="s2">&quot;mappings&quot;</span><span class="p">:</span> <span class="p">{</span>
                             <span class="s2">&quot;dynamic&quot;</span><span class="p">:</span> <span class="kc">True</span><span class="p">,</span>
-                            <span class="s2">&quot;fields&quot;</span><span class="p">:</span> <span class="p">{</span>
-                                <span class="s2">&quot;_outputs&quot;</span><span class="p">:</span> <span class="p">{</span>
-                                    <span class="s2">&quot;fields&quot;</span><span class="p">:</span> <span class="p">{</span>
-                                        <span class="n">key</span><span class="p">:</span> <span class="p">{</span>
-                                            <span class="s2">&quot;fields&quot;</span><span class="p">:</span> <span class="n">fields</span><span class="p">,</span>
-                                            <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;document&quot;</span><span class="p">,</span>
-                                        <span class="p">}</span>
-                                    <span class="p">},</span>
-                                    <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;document&quot;</span><span class="p">,</span>
-                                <span class="p">}</span>
-                            <span class="p">},</span>
+                            <span class="s2">&quot;fields&quot;</span><span class="p">:</span> <span class="n">fields1</span><span class="p">,</span>
                         <span class="p">}</span>
                     <span class="p">},</span>
                 <span class="p">}</span>
@@ -418,8 +433,18 @@
         <span class="nb">print</span><span class="p">(</span><span class="n">json</span><span class="o">.</span><span class="n">dumps</span><span class="p">(</span><span class="n">index_definition</span><span class="p">,</span> <span class="n">indent</span><span class="o">=</span><span class="mi">2</span><span class="p">))</span>
         <span class="k">if</span> <span class="ow">not</span> <span class="n">dry_run</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">db</span><span class="o">.</span><span class="n">command</span><span class="p">(</span><span class="n">index_definition</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="MongoDataBackend.disconnect">
+<a class="viewcode-back" href="../../../../source/superduperdb.backends.mongodb.html#superduperdb.backends.mongodb.data_backend.MongoDataBackend.disconnect">[docs]</a>
+    <span class="k">def</span> <span class="nf">disconnect</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Disconnect the client</span>
+<span class="sd">        &quot;&quot;&quot;</span></div>
 </div>
 
+
+        <span class="c1"># TODO: implement me</span>
 </pre></div>
         </article>
       </div>
@@ -456,10 +481,5 @@
     <script src="../../../../_static/doctools.js?v=888ff710"></script>
     <script src="../../../../_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="../../../../_static/scripts/furo.js?v=32e29ea5"></script>
-    <script src="../../../../_static/clipboard.min.js?v=a7894cd8"></script>
-    <script src="../../../../_static/copybutton.js?v=f281be69"></script>
-    <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
-    <script src="https://unpkg.com/mermaid@10.2.0/dist/mermaid.min.js"></script>
-    <script>mermaid.initialize({startOnLoad:true});</script>
     </body>
 </html>
